@@ -25,18 +25,7 @@ server.registerTool(
     const summary = {
       date,
       turns: input?.turns ?? 0,
-      models: models.map((row: any) => ({
-        id: row.id,
-        name: row.name,
-        maker: row.maker,
-        score: row.score ?? null,
-        turnsPassed: row.turnsPassed ?? null,
-        seriousMistakes: row.seriousMistakes ?? null,
-        decisionMedianMs: row.decisionMedianMs ?? null,
-        modelClass: row.modelClass ?? null,
-        sizeGigabytes: row.sizeGigabytes ?? null,
-        error: row.error ?? null,
-      })),
+      models, // full rows: the page shows a model's breakdown and facts when it is clicked
     };
     return { content: [{ type: 'text', text: JSON.stringify(summary) }], structuredContent: summary };
   },
