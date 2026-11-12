@@ -35,6 +35,5 @@
             "destination": "/toolbench/",
             "permanent": false
         }
-    ],
-    "trailingSlash": true
+    ]
 }
