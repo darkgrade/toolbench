@@ -33,9 +33,11 @@ const MIXTURE_OF_EXPERTS = new Set(['qwen3.5-35b-a3b', 'qwen3.6-35b-a3b', 'gpt-o
 const MAKERS: Record<string, string> = {
     'qwen3.5': 'Qwen', 'qwen3.6': 'Qwen', 'qwen3.8': 'Qwen', qwen3: 'Qwen', 'ornith': 'Ornith', saluki: 'Conway Research', underdog: 'Conway Research', bonsai: 'Prism ML', ternary: 'Prism ML',
     gpt: 'OpenAI', glm: 'Z.ai', gemma: 'Google', nemotron: 'NVIDIA', granite: 'IBM', 'lfm2.5': 'Liquid AI', lfm2: 'Liquid AI', ministral: 'Mistral', mistral: 'Mistral', xlam: 'Salesforce',
+    minicpm5: 'OpenBMB', k2: 'MBZUAI IFM', lfm3: 'Liquid AI', g9v3: 'ai9stars', jan: 'Jan', smollm3: 'Hugging Face', phi: 'Microsoft', functiongemma: 'Google',
 }
 const LICENCES: Record<string, string> = {
     'ornith-1.5-9b': 'Unstated', 'glm-4.7-flash': 'MIT', 'nemotron-3.5-lightning': 'OpenMDW', 'lfm2.5-8b-a1b': 'LFM Open', 'lfm2-24b-a2b': 'LFM Open', 'xlam-2-8b': 'CC-BY-NC-4.0', 'underdog-poodle-4b': 'CC-BY-NC-4.0',
+    'lfm3-1.7b': 'LFM Open', 'nemotron-3-nano-4b': 'NVIDIA Open Model', 'xlam-2-3b': 'CC-BY-NC-4.0', 'phi-4-mini': 'MIT', 'functiongemma-270m': 'Gemma',
 }
 
 /** Models tried and dropped, with why; shown on the site. */
@@ -68,4 +70,17 @@ export const TEXT_MODELS: TextModel[] = [
     text('lfm2.5-8b-a1b', 'LFM2.5 8B-A1B (Q4_K_M)', 'LiquidAI/LFM2.5-8B-A1B-GGUF', 'LFM2.5-8B-A1B-Q4_K_M.gguf'),
     text('lfm2-24b-a2b', 'LFM2 24B-A2B (Q4_K_M)', 'LiquidAI/LFM2-24B-A2B-GGUF', 'LFM2-24B-A2B-Q4_K_M.gguf'),
     text('xlam-2-8b', 'xLAM-2 8B fc-r (Q4_K_M)', 'Salesforce/Llama-xLAM-2-8b-fc-r-gguf', 'Llama-xLAM-2-8B-fc-r-Q4_K_M.gguf'),
+    text('minicpm5-2b', 'MiniCPM5 2B (Q4_K_M)', 'openbmb/MiniCPM5-2B-GGUF', 'MiniCPM5-2B-Q4_K_M.gguf'),
+    text('k2-horizon-3.7b', 'K2 Horizon 3.7B (Q4_K_M)', 'IFM/K2-Horizon-3.7B-GGUF', 'K2-Horizon-4B-Q4_K_M.gguf'),
+    text('lfm3-1.7b', 'LFM3 1.7B (Q4_K_M)', 'LiquidAI/LFM3-1.7B-GGUF', 'LFM3-1.7B-Q4_K_M.gguf'),
+    text('nemotron-3-nano-4b', 'Nemotron 3 Nano 4B (Q4_K_M)', 'nvidia/NVIDIA-Nemotron-3-Nano-4B-GGUF', 'NVIDIA-Nemotron3-Nano-4B-Q4_K_M.gguf'),
+    text('g9v3-3b', 'G9v3 3B (Q4_K_M)', 'bartowski/ai9stars_G9v3-3B-GGUF', 'ai9stars_G9v3-3B-Q4_K_M.gguf'),
+    text('qwen3.5-2b', 'Qwen3.5 2B (Q4_K_M)', 'unsloth/Qwen3.5-2B-GGUF', 'Qwen3.5-2B-Q4_K_M.gguf'),
+    text('jan-v3.5-4b', 'Jan v3.5 4B (Q4_K_M)', 'janhq/Jan-v3.5-4B-gguf', 'Jan-v3.5-4B-Q4_K_M.gguf'),
+    text('xlam-2-3b', 'xLAM-2 3B fc-r (Q4_K_M)', 'Salesforce/xLAM-2-3b-fc-r-gguf', 'xLAM-2-3B-fc-r-Q4_K_M.gguf'),
+    text('smollm3-3b', 'SmolLM3 3B (Q4_K_M)', 'ggml-org/SmolLM3-3B-GGUF', 'SmolLM3-Q4_K_M.gguf'),
+    text('phi-4-mini', 'Phi-4-mini 3.8B (Q4_K_M)', 'unsloth/Phi-4-mini-instruct-GGUF', 'Phi-4-mini-instruct-Q4_K_M.gguf'),
+    text('gemma-4-e2b', 'Gemma 4 E2B (Q4_K_M)', 'unsloth/gemma-4-E2B-it-GGUF', 'gemma-4-E2B-it-Q4_K_M.gguf'),
+    text('ministral-3-3b', 'Ministral 3 3B (Q4_K_M)', 'mistralai/Ministral-3-3B-Instruct-2512-GGUF', 'Ministral-3-3B-Instruct-2512-Q4_K_M.gguf'),
+    text('functiongemma-270m', 'FunctionGemma 270M (Q4_K_M)', 'unsloth/functiongemma-270m-it-GGUF', 'functiongemma-270m-it-Q4_K_M.gguf'),
 ]
