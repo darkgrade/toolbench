@@ -37,7 +37,7 @@ const MAKERS: Record<string, string> = {
 }
 const LICENCES: Record<string, string> = {
     'ornith-1.5-9b': 'Unstated', 'glm-4.7-flash': 'MIT', 'nemotron-3.5-lightning': 'OpenMDW', 'lfm2.5-8b-a1b': 'LFM Open', 'lfm2-24b-a2b': 'LFM Open', 'xlam-2-8b': 'CC-BY-NC-4.0', 'underdog-poodle-4b': 'CC-BY-NC-4.0',
-    'lfm3-1.7b': 'LFM Open', 'nemotron-3-nano-4b': 'NVIDIA Open Model', 'xlam-2-3b': 'CC-BY-NC-4.0', 'phi-4-mini': 'MIT', 'functiongemma-270m': 'Gemma',
+    'lfm3-1.7b': 'LFM Open', 'nemotron-3-nano-4b': 'NVIDIA Open Model', 'xlam-2-3b': 'CC-BY-NC-4.0', 'phi-4-mini': 'MIT', 'functiongemma-270m': 'Gemma', 'nemotron-3.5-bolt-e4b': 'NVIDIA Open Model',
 }
 
 /** Models tried and dropped, with why; shown on the site. */
@@ -83,4 +83,6 @@ export const TEXT_MODELS: TextModel[] = [
     text('gemma-4-e2b', 'Gemma 4 E2B (Q4_K_M)', 'unsloth/gemma-4-E2B-it-GGUF', 'gemma-4-E2B-it-Q4_K_M.gguf'),
     text('ministral-3-3b', 'Ministral 3 3B (Q4_K_M)', 'mistralai/Ministral-3-3B-Instruct-2512-GGUF', 'Ministral-3-3B-Instruct-2512-Q4_K_M.gguf'),
     text('functiongemma-270m', 'FunctionGemma 270M (Q4_K_M)', 'unsloth/functiongemma-270m-it-GGUF', 'functiongemma-270m-it-Q4_K_M.gguf'),
+    text('qwen3.5-0.8b', 'Qwen3.5 0.8B (Q4_K_M)', 'unsloth/Qwen3.5-0.8B-GGUF', 'Qwen3.5-0.8B-Q4_K_M.gguf'),
+    text('nemotron-3.5-bolt-e4b', 'Nemotron 3.5 Bolt E4B (UD-Q4_K_XL)', 'unsloth/NVIDIA-Nemotron-3.5-Bolt-E4B-GGUF', 'NVIDIA-Nemotron-3.5-Bolt-E4B-UD-Q4_K_XL.gguf'),
 ]

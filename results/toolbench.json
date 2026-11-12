@@ -1,7 +1,7 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-12T03:59:18.034Z",
+  "date": "2026-11-12T04:04:12.875Z",
   "hardware": {
     "machine": "Mac16,6",
     "chip": "Apple M4 Max",
@@ -2543,6 +2543,18 @@
       "generatedTokens": 120,
       "loadSeconds": 0.4,
       "peakMemoryGigabytes": 0.68
+    },
+    {
+      "id": "qwen3.5-0.8b",
+      "name": "Qwen3.5 0.8B (Q4_K_M)",
+      "maker": "Qwen",
+      "error": "/Users/kevinschaich/.cache/darkgrade-bench/toolbench/llama.cpp/llama-server exited with code 1; see /Users/kevinschaich/repositories/toolbench/results/raw/qwen3.5-0.8b.server.log"
+    },
+    {
+      "id": "nemotron-3.5-bolt-e4b",
+      "name": "Nemotron 3.5 Bolt E4B (UD-Q4_K_XL)",
+      "maker": "NVIDIA",
+      "error": "/Users/kevinschaich/.cache/darkgrade-bench/toolbench/llama.cpp/llama-server exited with code 1; see /Users/kevinschaich/repositories/toolbench/results/raw/nemotron-3.5-bolt-e4b.server.log"
     }
   ]
 }
