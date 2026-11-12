@@ -35,6 +35,7 @@ export interface ModelSummary {
     strengths?: string[]
     weaknesses?: string[]
     name: string
+    modelClass?: 'small' | 'mixture of experts'
     maker: string
     licence?: string
     source?: string
@@ -90,6 +91,15 @@ export function modelDetail(id: string): ModelDetail | undefined {
 
 /** One row of filters per category, each a one-of-a-few choice. */
 export const FILTERS: { id: string; label: string; options: { id: string; label: string; matches: (model: ModelSummary) => boolean }[] }[] = [
+    {
+        id: 'class',
+        label: 'Kind of model',
+        options: [
+            { id: 'all', label: 'All models', matches: () => true },
+            { id: 'small', label: 'Small', matches: model => model.modelClass === 'small' },
+            { id: 'moe', label: 'Mixture of experts', matches: model => model.modelClass === 'mixture of experts' },
+        ],
+    },
     {
         id: 'size',
         label: 'Size',

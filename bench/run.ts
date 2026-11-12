@@ -304,6 +304,7 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
         id: model.id,
         ...scored,
         name: model.name,
+        modelClass: model.modelClass,
         maker: model.maker,
         licence: model.licence,
         source: `https://huggingface.co/${model.repository}`,
