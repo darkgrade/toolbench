@@ -226,6 +226,19 @@ function runningEngines(): string[] {
         .filter(line => (line.trim().split(/\s+/)[1] ?? '').split('/').at(-1) === 'llama-server')
 }
 
+/**
+ * Reads the fixed start of every request (system prompt and tool list, about 5k tokens) once, untimed, as
+ * Darkgrade Studio does when it loads a model, so the first turn isn't timed on a one-off read that
+ * big dense models can't finish inside the limit. Same for every model.
+ */
+async function warmUp(url: string): Promise<void> {
+    await fetch(`${url}/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'system', content: AGENT_INSTRUCTIONS }, { role: 'user', content: 'Ready?' }], tools: OPENAI_TOOLS, max_tokens: 1 }),
+    })
+}
+
 /** Thrown between turns when a stop has been asked for; the model is left out of the results. */
 class StopRequested extends Error {}
 
@@ -243,6 +256,7 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
     cameraService.useFrame(FRAME_PATH)
     studioView.report({ ...STARTING_VIEW })
     const conversation: ChatMessage[] = [{ role: 'system', content: AGENT_INSTRUCTIONS }]
+    await warmUp(server.url)
     const perfect = JSON.parse(readFileSync(PERFECT_PATH, 'utf8')) as Record<string, { camera: CameraSnapshot; view: StudioViewState }>
     try {
         for (const { turn, text } of turns) {
@@ -339,7 +353,7 @@ async function runDetails(): Promise<Record<string, unknown>> {
             input: "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
             tools: "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
             accuracy: "Each turn is checked against the answer key by outcome: where the camera and Studio end up, not which tools were used. Lookups never count against a model and an answer's wording isn't graded. Mistakes are serious (ruins a take or your work: recording started or stopped at the wrong time, an unasked photo or download, the wrong file, the picture changed mid-take, a mode change not made, a false claim) or minor (a small adjustment missed or off, a harmless extra). A turn counts 1 when right, ½ with only minor mistakes, 0 with any serious one.",
-            latency: "From sending a turn to the model finishing its first action, or its reply when it shouldn't act.",
+            latency: "From sending a turn to the model finishing its first action, or its reply when it shouldn't act. After loading, each model reads the fixed start of every request (system prompt and tools) once, untimed, as Studio does on load.",
             timeLimit: `${TURN_LIMIT_MS / 1000} s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a ${TURN_LIMIT_MS / 1000} s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.`,
             score: 'A 0–100 score from fixed scales, so it doesn\'t change when other models are added: right outcome (45%: half the turns\' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.',
             isolation: 'One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.',
