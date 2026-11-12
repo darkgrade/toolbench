@@ -10,14 +10,18 @@ Which local AI model gets your camera commands right?
 
 Each model hears the same script, word for word: a creator filming a two-take video with requests to
 Darkgrade Studio, their camera app, in between and during the takes (`script/video-script.md`). The
-model has Studio's real tools and acts on a simulated camera. Every one of the 29 turns is checked
-against the script's answer key: did it do the right thing, in the right order, leave the video itself
-alone, answer questions without acting, and say what it can't do? English only for now.
+model has Studio's real tools and acts on a simulated camera. Every one of the 33 turns is checked
+against the script's answer key by outcome: did the camera and Studio end up where you'd want them? Lookups
+and the wording of answers don't count. Mistakes that would ruin a take or your work (recording at the
+wrong time, an unasked photo or download, the picture changed mid-take) are serious; small slips are minor.
+English only for now.
 
-- Every model runs locally with llama.cpp's `llama-server` and its default settings, one at a time.
+- Every model runs locally with llama.cpp's `llama-server` and its default settings, one at a time, except
+  that thinking is off for every model (`--reasoning off`): a voice app has to act at once.
 - Each turn starts from where a perfect run would be, so one mistake isn't counted twice.
-- The 0–100 score weighs the right action most (55%), then clean tool calls (15%) and how long it takes
-  to act (30%), on fixed scales.
+- The 0–100 score weighs the right outcome most (45%: a turn counts 1 when right, ½ with only minor
+  mistakes, 0 with a serious one), then serious mistakes (15%), clean tool calls (5%) and how long it
+  takes to decide (35%), on fixed scales. Each model gets 10 s to decide; the reply after acting isn't timed.
 
 `results/toolbench.json` has every number, plus the hardware, the llama.cpp version, each model's file
 checksum and the darkgrade commit whose tools were tested.

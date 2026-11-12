@@ -58,7 +58,7 @@ Every bench gives each entry one score from 0 (worst) to 100 (best), the same wa
 camera's spec level: `bench/rubric.ts` scores a few areas on fixed scales (not against the other entries,
 so a score doesn't move when the field changes), weights them, gives a reason per area, and returns no
 score when under half the weight is known. Each bench defines its own areas and weights in one file
-(here `bench/tool-score.ts`: right action 55, clean tool calls 15, typical wait 20, slow wait 10) and states them in the
+(here `bench/tool-score.ts`: right outcome 45, serious mistakes 15, clean tool calls 5, typical wait 25, slow wait 10) and states them in the
 results file's `method.score`. Change an area's scale or weight only deliberately, and say so in the
 results.
 

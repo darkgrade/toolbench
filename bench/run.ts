@@ -7,7 +7,7 @@
  * the darkgrade checkout). Every tool call runs against the simulated camera, and each turn is checked
  * against the answer key. See AGENTS.md "Bench conventions".
  */
-import { ANSWER_KEY, type ToolCall, type TurnOutcome } from '@bench/answer-key'
+import { ANSWER_KEY, type Mistake, type ToolCall, type TurnOutcome, turnCredit } from '@bench/answer-key'
 import { type RunningServer, startServer } from '@bench/engines'
 import { DROPPED_MODELS, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
 import { SCRIPT_PATH, scriptTurns } from '@bench/script'
@@ -36,6 +36,8 @@ const DARKGRADE = process.env.DARKGRADE_PATH ?? resolve(ROOT, '..', 'darkgrade')
 const RESULTS_VERSION = 1
 /** Studio's assistant allows this many model calls per request. */
 const MAXIMUM_STEPS = 5
+/** Thinking off for every model: a voice app has to answer at once, and it's the same for all (see README). */
+export const THINKING_OFF = ['--reasoning', 'off']
 /**
  * Every model gets this long to decide: its first action, or its answer when it shouldn't act. Past it
  * the turn is cut off and counts as wrong. As in Darkgrade Studio, a tool runs as soon as the model
@@ -139,7 +141,10 @@ interface TurnRecord {
     kind: string
     expected: string
     passed: boolean
+    /** Mistakes, each "serious: …" or "minor: …". */
     failures: string[]
+    /** 1 right, ½ only minor mistakes, 0 any serious mistake. */
+    credit: number
     reply: string
     calls: ToolCall[]
     /** Cut off at TURN_LIMIT_MS. */
@@ -152,7 +157,7 @@ interface TurnRecord {
 }
 
 /** One turn: the script's words appended to the conversation so far, as Studio's assistant hears them. */
-async function runTurn(url: string, conversation: ChatMessage[], text: string): Promise<Omit<TurnRecord, 'turn' | 'said' | 'kind' | 'expected' | 'passed' | 'failures'>> {
+async function runTurn(url: string, conversation: ChatMessage[], text: string): Promise<Omit<TurnRecord, 'turn' | 'said' | 'kind' | 'expected' | 'passed' | 'failures' | 'credit'>> {
     const startedMs = performance.now()
     conversation.push({ role: 'user', content: `${text}\n\nCAMERA NOW: ${JSON.stringify(cameraStatus())}` })
     const calls: ToolCall[] = []
@@ -225,7 +230,7 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
     if (runningEngines().length) throw new Error('another llama-server is still running, refusing to measure')
     const modelPath = join(LLAMA_MODELS, model.repository.replace('/', '__'), model.file)
     startModel(model.id, scriptTurns().length)
-    const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`))
+    const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`), THINKING_OFF)
     const turns = scriptTurns()
     const records: TurnRecord[] = []
     cameraService.reset()
@@ -245,10 +250,11 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
             const result = await runTurn(server.url, conversation, text)
             const after = { camera: structuredClone(cameraService.getState()), view: { ...studioView.getState()! } }
             const outcome: TurnOutcome = { before, after, events: cameraService.events.slice(eventCount), calls: result.calls, reply: result.reply }
-            const failures = [...(result.timedOut ? [`took longer than ${TURN_LIMIT_MS / 1000} s`] : []), ...expectation.check(outcome)]
-            records.push({ turn, said: text, kind: expectation.kind, expected: expectation.expected, passed: failures.length === 0, failures, ...result })
+            const mistakes: Mistake[] = [...(result.timedOut ? [{ severity: 'serious' as const, reason: `took longer than ${TURN_LIMIT_MS / 1000} s to decide` }] : []), ...expectation.check(outcome)]
+            const failures = mistakes.map(mistake => `${mistake.severity}: ${mistake.reason}`)
+            records.push({ turn, said: text, kind: expectation.kind, expected: expectation.expected, passed: mistakes.length === 0, failures, credit: turnCredit(mistakes), ...result })
             stepDone(model.id, records.length, turns.length, `Turn ${turn}: "${text.length > 60 ? `${text.slice(0, 57)}…` : text}"`, {
-                passed: failures.length === 0,
+                passed: mistakes.length === 0 ? true : mistakes.some(mistake => mistake.severity === 'serious') ? false : undefined,
                 note: failures.length ? failures.join('; ') : `${((result.decisionMs ?? result.totalMs) / 1000).toFixed(1)} s`,
             })
             console.log(`  ${model.id} turn ${turn}: ${failures.length ? `FAIL ${failures.join('; ')}` : 'pass'} (${Math.round(result.decisionMs ?? result.totalMs)} ms)`)
@@ -259,12 +265,13 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
     if (runningEngines().length) throw new Error('llama-server did not exit')
     const decisions = records.map(record => record.decisionMs).filter((value): value is number => value !== null)
     const calls = records.flatMap(record => record.calls)
-    const turnsPassed = records.filter(record => record.passed).length / records.length
+    const turnsPassed = records.reduce((sum, record) => sum + record.credit, 0) / records.length
+    const seriousShare = records.filter(record => record.credit === 0).length / records.length
     const invalidCallShare = calls.length ? calls.filter(call => !call.valid).length / calls.length : 0
     const decisionMedianMs = percentile(decisions, 0.5)
     const decisionP90Ms = percentile(decisions, 0.9)
-    const scored = toolScore({ turnsPassed, invalidCallShare, decisionMedianMs, decisionP90Ms })
-    finishModel(model.id, { score: scored.score ?? '–', 'turns right': `${Math.round(turnsPassed * 100)}%`, 'typical wait': `${((decisionMedianMs ?? 0) / 1000).toFixed(1)} s` })
+    const scored = toolScore({ turnsPassed, seriousShare, invalidCallShare, decisionMedianMs, decisionP90Ms })
+    finishModel(model.id, { score: scored.score ?? '–', 'turns right': `${Math.round(turnsPassed * 100)}%`, 'serious mistakes': records.filter(record => record.credit === 0).length, 'typical wait': `${((decisionMedianMs ?? 0) / 1000).toFixed(1)} s` })
     const byKind = (kind: string) => {
         const ofKind = records.filter(record => record.kind === kind)
         return { passed: ofKind.filter(record => record.passed).length, total: ofKind.length }
@@ -281,6 +288,8 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
         files: [{ name: model.file, bytes: statSync(modelPath).size, sha256: await sha256(modelPath) }],
         sizeGigabytes: Number((statSync(modelPath).size / 1e9).toFixed(2)),
         turnsPassed: Number(turnsPassed.toFixed(4)),
+        seriousMistakes: records.filter(record => record.credit === 0).length,
+        minorOnly: records.filter(record => record.credit === 0.5).length,
         byKind: { requests: byKind('request'), questions: byKind('question'), cannotDo: byKind('cannot-do'), video: byKind('video') },
         toolCalls: calls.length,
         invalidToolCalls: calls.filter(call => !call.valid).length,
@@ -319,13 +328,13 @@ async function runDetails(): Promise<Record<string, unknown>> {
         },
         dropped: DROPPED_MODELS,
         method: {
-            settings: "Each model on llama-server with its defaults; the only arguments are the model file and a port. Requests carry no sampling or reasoning options, so models think if that's their default.",
+            settings: "Each model on llama-server with its defaults, except thinking: every model runs with thinking off (`--reasoning off`), because a voice app has to act at once and it's the same for all. The only other arguments are the model file and a port; requests carry no sampling options.",
             input: "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
             tools: "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
-            accuracy: 'Each turn is checked against the answer key: what changed on the camera and in Studio, which tools were called and in what order. Requests may make extra read-only calls; turns that are the video itself may make none.',
+            accuracy: "Each turn is checked against the answer key by outcome: where the camera and Studio end up, not which tools were used. Lookups never count against a model and an answer's wording isn't graded. Mistakes are serious (ruins a take or your work: recording started or stopped at the wrong time, an unasked photo or download, the wrong file, the picture changed mid-take, a mode change not made, a false claim) or minor (a small adjustment missed or off, a harmless extra). A turn counts 1 when right, ½ with only minor mistakes, 0 with any serious one.",
             latency: "From sending a turn to the model finishing its first action, or its reply when it shouldn't act.",
             timeLimit: `${TURN_LIMIT_MS / 1000} s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a ${TURN_LIMIT_MS / 1000} s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.`,
-            score: 'A 0–100 score from fixed scales, so it doesn\'t change when other models are added: right action (55%: half the turns right scores 0, all of them 100), clean tool calls (15%: one call in five invalid scores 0, none 100), typical wait (20%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 30 s scores 0, 1 s scores 100), waits on a log scale.',
+            score: 'A 0–100 score from fixed scales, so it doesn\'t change when other models are added: right outcome (45%: half the turns\' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.',
             isolation: 'One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.',
             runs: 'One pass per model.',
         },

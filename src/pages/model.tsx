@@ -93,8 +93,8 @@ export function ModelPage({ model }: { model: ModelSummary }) {
                                     </TableCell>
                                     <TableCell className="max-w-md whitespace-normal">
                                         <div className="flex flex-col gap-1">
-                                            <Badge variant={turn.passed ? 'secondary' : 'destructive'} className="w-fit">
-                                                {turn.passed ? 'Right' : 'Wrong'}
+                                            <Badge variant={turn.passed ? 'secondary' : turn.credit === 0.5 ? 'outline' : 'destructive'} className="w-fit">
+                                                {turn.passed ? 'Right' : turn.credit === 0.5 ? 'Minor slip' : 'Serious mistake'}
                                             </Badge>
                                             {turn.calls.map((call, index) => (
                                                 <code key={index} className="text-xs break-all">
@@ -103,8 +103,8 @@ export function ModelPage({ model }: { model: ModelSummary }) {
                                             ))}
                                             {turn.reply && <span className="text-xs text-muted-foreground">“{turn.reply}”</span>}
                                             {turn.failures.map(failure => (
-                                                <span key={failure} className="text-xs text-destructive">
-                                                    {failure}
+                                                <span key={failure} className={`text-xs ${failure.startsWith('serious') ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                                    {failure.replace(/^(serious|minor): /, '')}
                                                 </span>
                                             ))}
                                         </div>

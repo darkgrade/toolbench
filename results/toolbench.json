@@ -1,7 +1,7 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-12T02:01:12.108Z",
+  "date": "2026-11-12T02:20:41.928Z",
   "hardware": {
     "machine": "Mac16,6",
     "chip": "Apple M4 Max",
@@ -15,8 +15,8 @@
   },
   "input": {
     "script": "script/video-script.md",
-    "scriptSha256": "df770436f614a9a384d86008d83350f187a363380316b5c3070c8a41451ab8df",
-    "turns": 29,
+    "scriptSha256": "afd8d7441d74eae920491c7f2d79c3355e8d0668ff8164538f3ee2b7a0b52ce0",
+    "turns": 33,
     "tools": {
       "source": "darkgrade/darkgrade apps/studio/src/main/tools/studio-tools.ts",
       "commit": "c4f50e639fa2504df5f3e01d9452e965d12fb490",
@@ -34,49 +34,56 @@
     }
   ],
   "method": {
-    "settings": "Each model on llama-server with its defaults; the only arguments are the model file and a port. Requests carry no sampling or reasoning options, so models think if that's their default.",
+    "settings": "Each model on llama-server with its defaults, except thinking: every model runs with thinking off (`--reasoning off`), because a voice app has to act at once and it's the same for all. The only other arguments are the model file and a port; requests carry no sampling options.",
     "input": "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
     "tools": "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
-    "accuracy": "Each turn is checked against the answer key: what changed on the camera and in Studio, which tools were called and in what order. Requests may make extra read-only calls; turns that are the video itself may make none.",
+    "accuracy": "Each turn is checked against the answer key by outcome: where the camera and Studio end up, not which tools were used. Lookups never count against a model and an answer's wording isn't graded. Mistakes are serious (ruins a take or your work: recording started or stopped at the wrong time, an unasked photo or download, the wrong file, the picture changed mid-take, a mode change not made, a false claim) or minor (a small adjustment missed or off, a harmless extra). A turn counts 1 when right, ½ with only minor mistakes, 0 with any serious one.",
     "latency": "From sending a turn to the model finishing its first action, or its reply when it shouldn't act.",
     "timeLimit": "10 s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a 10 s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.",
-    "score": "A 0\u2013100 score from fixed scales, so it doesn't change when other models are added: right action (55%: half the turns right scores 0, all of them 100), clean tool calls (15%: one call in five invalid scores 0, none 100), typical wait (20%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 30 s scores 0, 1 s scores 100), waits on a log scale.",
+    "score": "A 0–100 score from fixed scales, so it doesn't change when other models are added: right outcome (45%: half the turns' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.",
     "isolation": "One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.",
     "runs": "One pass per model."
   },
   "models": [
     {
       "id": "qwen3.5-4b",
-      "score": 54,
+      "score": 67,
       "coverage": 100,
       "reasons": [
         {
-          "area": "Right action",
-          "weight": 55,
-          "score": 52,
-          "points": 28.4,
-          "why": "76% of turns right"
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 73,
+          "points": 32.7,
+          "why": "86% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 64,
+          "points": 9.5,
+          "why": "serious mistakes on 9% of turns"
         },
         {
           "area": "Clean tool calls",
-          "weight": 15,
+          "weight": 5,
           "score": 100,
-          "points": 15,
+          "points": 5,
           "why": "0% of calls invalid"
         },
         {
           "area": "Typical wait",
-          "weight": 20,
-          "score": 36,
-          "points": 7.2,
-          "why": "2.8 s typical wait"
+          "weight": 25,
+          "score": 57,
+          "points": 14.1,
+          "why": "1.4 s typical wait"
         },
         {
           "area": "Slow wait",
           "weight": 10,
-          "score": 36,
-          "points": 3.6,
-          "why": "8.9 s for the slowest 1 in 10"
+          "score": 57,
+          "points": 5.7,
+          "why": "2.7 s for the slowest 1 in 10"
         }
       ],
       "missing": [],
@@ -94,32 +101,34 @@
         }
       ],
       "sizeGigabytes": 2.74,
-      "turnsPassed": 0.7586,
+      "turnsPassed": 0.8636,
+      "seriousMistakes": 3,
+      "minorOnly": 3,
       "byKind": {
         "requests": {
-          "passed": 12,
-          "total": 17
+          "passed": 14,
+          "total": 20
         },
         "questions": {
           "passed": 4,
           "total": 4
         },
         "cannotDo": {
-          "passed": 2,
-          "total": 2
+          "passed": 1,
+          "total": 1
         },
         "video": {
-          "passed": 4,
-          "total": 6
+          "passed": 8,
+          "total": 8
         }
       },
-      "toolCalls": 24,
+      "toolCalls": 16,
       "invalidToolCalls": 0,
-      "decisionMedianMs": 2849,
-      "decisionP90Ms": 8853,
-      "decisionMaxMs": 10000,
-      "generatedTokens": 5025,
-      "loadSeconds": 1.9,
+      "decisionMedianMs": 1379,
+      "decisionP90Ms": 2704,
+      "decisionMaxMs": 4096,
+      "generatedTokens": 1363,
+      "loadSeconds": 1.1,
       "peakMemoryGigabytes": 10
     }
   ]

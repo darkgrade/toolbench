@@ -42,6 +42,7 @@ export interface ModelSummary {
     sizeGigabytes?: number
     error?: string
     turnsPassed?: number
+    seriousMistakes?: number
     byKind?: { requests: KindScore; questions: KindScore; cannotDo: KindScore; video: KindScore }
     toolCalls?: number
     invalidToolCalls?: number
@@ -66,6 +67,8 @@ export interface TurnDetail {
     kind: string
     expected: string
     passed: boolean
+    /** 1 right, ½ only minor mistakes, 0 any serious mistake. */
+    credit?: number
     failures: string[]
     reply: string
     calls: { name: string; arguments: Record<string, unknown>; valid: boolean }[]
@@ -110,9 +113,9 @@ export const FILTERS: { id: string; label: string; options: { id: string; label:
 export const percent = (value: number | null | undefined, places = 0): string => (value === null || value === undefined ? '–' : `${(value * 100).toFixed(places)}%`)
 export const seconds = (milliseconds: number | null | undefined): string => (milliseconds === null || milliseconds === undefined ? '–' : `${(milliseconds / 1000).toFixed(1)} s`)
 
-/** "One script, 29 turns, English only." */
+/** "One script, 33 turns, English only." */
 export function sampleSentence(): string {
-    return `English only for now: one script of ${RUN.input?.turns ?? 29} turns, each model run once. With one script, treat scores within a few points of each other as ties.`
+    return `English only for now: one script of ${RUN.input?.turns ?? 33} turns, each model run once. With one script, treat scores within a few points of each other as ties.`
 }
 
 /** Every page the site has, with what its title, description and preview card say. */
