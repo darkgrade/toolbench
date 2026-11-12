@@ -28,16 +28,16 @@ export interface TextModel {
 
 const text = (id: string, name: string, repository: string, file: string): TextModel => ({ id, modelClass: MIXTURE_OF_EXPERTS.has(id) ? 'mixture of experts' : 'small', name, maker: MAKERS[id.split('-')[0]] ?? repository.split('/')[0], licence: LICENCES[id] ?? 'Apache-2.0', repository, file })
 
-const MIXTURE_OF_EXPERTS = new Set(['qwen3.5-35b-a3b', 'qwen3.6-35b-a3b', 'gpt-oss-20b', 'glm-4.7-flash', 'gemma-4-26b-a4b', 'nemotron-3.5-lightning', 'lfm2.5-8b-a1b', 'lfm2-24b-a2b'])
+const MIXTURE_OF_EXPERTS = new Set(['ornith-1.5-35b-a3b', 'qwen3.5-35b-a3b', 'qwen3.6-35b-a3b', 'gpt-oss-20b', 'glm-4.7-flash', 'gemma-4-26b-a4b', 'nemotron-3.5-lightning', 'lfm2.5-8b-a1b', 'lfm2-24b-a2b'])
 
 const MAKERS: Record<string, string> = {
     'qwen3.5': 'Qwen', 'qwen3.6': 'Qwen', 'qwen3.8': 'Qwen', qwen3: 'Qwen', 'ornith': 'Ornith', saluki: 'Conway Research', underdog: 'Conway Research', bonsai: 'Prism ML', ternary: 'Prism ML',
     gpt: 'OpenAI', glm: 'Z.ai', gemma: 'Google', nemotron: 'NVIDIA', granite: 'IBM', 'lfm2.5': 'Liquid AI', lfm2: 'Liquid AI', ministral: 'Mistral', mistral: 'Mistral', xlam: 'Salesforce',
-    minicpm5: 'OpenBMB', k2: 'MBZUAI IFM', lfm3: 'Liquid AI', g9v3: 'ai9stars', jan: 'Jan', smollm3: 'Hugging Face', phi: 'Microsoft', functiongemma: 'Google',
+    minicpm5: 'OpenBMB', k2: 'MBZUAI IFM', lfm3: 'Liquid AI', g9v3: 'ai9stars', jan: 'Jan', smollm3: 'Hugging Face', phi: 'Microsoft', functiongemma: 'Google', spark: 'XHToken', raon: 'KRAFTON',
 }
 const LICENCES: Record<string, string> = {
     'ornith-1.5-9b': 'Unstated', 'glm-4.7-flash': 'MIT', 'nemotron-3.5-lightning': 'OpenMDW', 'lfm2.5-8b-a1b': 'LFM Open', 'lfm2-24b-a2b': 'LFM Open', 'xlam-2-8b': 'CC-BY-NC-4.0', 'underdog-poodle-4b': 'CC-BY-NC-4.0',
-    'lfm3-1.7b': 'LFM Open', 'nemotron-3-nano-4b': 'NVIDIA Open Model', 'xlam-2-3b': 'CC-BY-NC-4.0', 'phi-4-mini': 'MIT', 'functiongemma-270m': 'Gemma', 'nemotron-3.5-bolt-e4b': 'NVIDIA Open Model',
+    'lfm3-1.7b': 'LFM Open', 'nemotron-3-nano-4b': 'NVIDIA Open Model', 'xlam-2-3b': 'CC-BY-NC-4.0', 'phi-4-mini': 'MIT', 'functiongemma-270m': 'Gemma', 'nemotron-3.5-bolt-e4b': 'NVIDIA Open Model', 'ornith-1.5-35b-a3b': 'Unstated', 'nemotron-labs-dory-4b': 'OpenMDW',
 }
 
 /** Models tried and dropped, with why; shown on the site. */
@@ -85,4 +85,13 @@ export const TEXT_MODELS: TextModel[] = [
     text('functiongemma-270m', 'FunctionGemma 270M (Q4_K_M)', 'unsloth/functiongemma-270m-it-GGUF', 'functiongemma-270m-it-Q4_K_M.gguf'),
     text('qwen3.5-0.8b', 'Qwen3.5 0.8B (Q4_K_M)', 'unsloth/Qwen3.5-0.8B-GGUF', 'Qwen3.5-0.8B-Q4_K_M.gguf'),
     text('nemotron-3.5-bolt-e4b', 'Nemotron 3.5 Bolt E4B (UD-Q4_K_XL)', 'unsloth/NVIDIA-Nemotron-3.5-Bolt-E4B-GGUF', 'NVIDIA-Nemotron-3.5-Bolt-E4B-UD-Q4_K_XL.gguf'),
+    text('minicpm5-1b', 'MiniCPM5 1B (Q4_K_M)', 'openbmb/MiniCPM5-1B-GGUF', 'MiniCPM5-1B-Q4_K_M.gguf'),
+    text('minicpm5-2b-q8', 'MiniCPM5 2B (Q8_0)', 'openbmb/MiniCPM5-2B-GGUF', 'MiniCPM5-2B-Q8_0.gguf'),
+    text('gemma-4-e2b-q8', 'Gemma 4 E2B (Q8_0)', 'unsloth/gemma-4-E2B-it-GGUF', 'gemma-4-E2B-it-Q8_0.gguf'),
+    text('qwen3.5-0.8b-q8', 'Qwen3.5 0.8B (Q8_0)', 'unsloth/Qwen3.5-0.8B-GGUF', 'Qwen3.5-0.8B-Q8_0.gguf'),
+    text('ornith-1.5-35b-a3b', 'Ornith 1.5 35B-A3B (Q4_K_M)', 'ornith-ai/Ornith-1.5-35B-A3B-GGUF', 'Ornith-1.5-35B-Q4_K_M.gguf'),
+    text('spark-x2.6-4b', 'Spark-X2.6 4B (Q4_K_M)', 'XHToken/Spark-X2.6-4B-GGUF', 'Spark-X2.6-4B-Q4_K_M.gguf'),
+    text('spark-x2.6-1.7b', 'Spark-X2.6 1.7B (Q4_K_M)', 'XHToken/Spark-X2.6-1.7B-GGUF', 'Spark-X2.6-1.7B-Q4_K_M.gguf'),
+    text('raon-1-nano', 'Raon-1 nano 3B (Q4_K_M)', 'KRAFTON/Raon-1-nano-gguf', 'raon-1-nano-Q4_K_M.gguf'),
+    text('nemotron-labs-dory-4b', 'Nemotron Labs Dory 1.0 4B (Q5_K_M)', 'nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-GGUF', 'NVIDIA-Nemotron-Labs-Dory1.0-4B-Q5_K_M.gguf'),
 ]

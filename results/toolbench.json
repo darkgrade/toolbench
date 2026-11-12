@@ -1,7 +1,7 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-12T04:06:13.534Z",
+  "date": "2026-11-12T04:33:37.930Z",
   "hardware": {
     "machine": "Mac16,6",
     "chip": "Apple M4 Max",
@@ -165,6 +165,95 @@
       "loadSeconds": 7.5,
       "peakMemoryGigabytes": 7.75,
       "modelClass": "mixture of experts"
+    },
+    {
+      "id": "ornith-1.5-35b-a3b",
+      "score": 84,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 91,
+          "points": 40.9,
+          "why": "95% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 100,
+          "points": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 59,
+          "points": 14.7,
+          "why": "1.3 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 80,
+          "points": 8,
+          "why": "1.6 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [
+        "95% of turns right"
+      ],
+      "weaknesses": [],
+      "name": "Ornith 1.5 35B-A3B (Q4_K_M)",
+      "modelClass": "mixture of experts",
+      "maker": "Ornith",
+      "licence": "Unstated",
+      "source": "https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B-GGUF",
+      "files": [
+        {
+          "name": "Ornith-1.5-35B-Q4_K_M.gguf",
+          "bytes": 21713463040,
+          "sha256": "42739874cc2ccfdb8523b23fbe52e29b2a7555c8176737ca9ca0b5d59859d41f"
+        }
+      ],
+      "sizeGigabytes": 21.71,
+      "turnsPassed": 0.9545,
+      "seriousMistakes": 0,
+      "minorOnly": 3,
+      "byKind": {
+        "requests": {
+          "passed": 18,
+          "total": 20
+        },
+        "questions": {
+          "passed": 3,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 23,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 1273,
+      "decisionP90Ms": 1579,
+      "decisionMaxMs": 4343,
+      "generatedTokens": 1578,
+      "loadSeconds": 2.2,
+      "peakMemoryGigabytes": 7.75
     },
     {
       "id": "ornith-1.5-9b",
@@ -610,6 +699,271 @@
       "generatedTokens": 660,
       "loadSeconds": 7.5,
       "peakMemoryGigabytes": 12
+    },
+    {
+      "id": "minicpm5-2b-q8",
+      "score": 76,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 82,
+          "points": 36.8,
+          "why": "91% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 76,
+          "points": 11.4,
+          "why": "serious mistakes on 6% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 58,
+          "points": 2.9,
+          "why": "8% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 66,
+          "points": 16.5,
+          "why": "1.0 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 81,
+          "points": 8.1,
+          "why": "1.6 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [
+        "91% of turns right"
+      ],
+      "weaknesses": [],
+      "name": "MiniCPM5 2B (Q8_0)",
+      "modelClass": "small",
+      "maker": "OpenBMB",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/openbmb/MiniCPM5-2B-GGUF",
+      "files": [
+        {
+          "name": "MiniCPM5-2B-Q8_0.gguf",
+          "bytes": 2679710688,
+          "sha256": "c5415f8989bf88a8288f1b55a3cc371af53c07b0faa220a63bd7a990cfaba078"
+        }
+      ],
+      "sizeGigabytes": 2.68,
+      "turnsPassed": 0.9091,
+      "seriousMistakes": 2,
+      "minorOnly": 2,
+      "byKind": {
+        "requests": {
+          "passed": 16,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 24,
+      "invalidToolCalls": 2,
+      "decisionMedianMs": 986,
+      "decisionP90Ms": 1561,
+      "decisionMaxMs": 2369,
+      "generatedTokens": 857,
+      "loadSeconds": 0.7,
+      "peakMemoryGigabytes": 5.69
+    },
+    {
+      "id": "spark-x2.6-1.7b",
+      "score": 76,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 70,
+          "points": 31.4,
+          "why": "85% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 52,
+          "points": 7.7,
+          "why": "serious mistakes on 12% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 87,
+          "points": 21.7,
+          "why": "0.5 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 100,
+          "points": 10,
+          "why": "0.6 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "Spark-X2.6 1.7B (Q4_K_M)",
+      "modelClass": "small",
+      "maker": "XHToken",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/XHToken/Spark-X2.6-1.7B-GGUF",
+      "files": [
+        {
+          "name": "Spark-X2.6-1.7B-Q4_K_M.gguf",
+          "bytes": 1768720512,
+          "sha256": "7abd9859c10924be3c583945456fa9b25d0569484876105a7b7376f7938fffb7"
+        }
+      ],
+      "sizeGigabytes": 1.77,
+      "turnsPassed": 0.8485,
+      "seriousMistakes": 4,
+      "minorOnly": 2,
+      "byKind": {
+        "requests": {
+          "passed": 15,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 0,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 20,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 479,
+      "decisionP90Ms": 633,
+      "decisionMaxMs": 997,
+      "generatedTokens": 766,
+      "loadSeconds": 2,
+      "peakMemoryGigabytes": 15
+    },
+    {
+      "id": "spark-x2.6-4b",
+      "score": 75,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 82,
+          "points": 36.8,
+          "why": "91% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 76,
+          "points": 11.4,
+          "why": "serious mistakes on 6% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 60,
+          "points": 15.1,
+          "why": "1.2 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 64,
+          "points": 6.4,
+          "why": "2.3 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [
+        "91% of turns right"
+      ],
+      "weaknesses": [],
+      "name": "Spark-X2.6 4B (Q4_K_M)",
+      "modelClass": "small",
+      "maker": "XHToken",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/XHToken/Spark-X2.6-4B-GGUF",
+      "files": [
+        {
+          "name": "Spark-X2.6-4B-Q4_K_M.gguf",
+          "bytes": 3543441312,
+          "sha256": "91cb2811aebb47ac916aa619d27d4cdd7f4143106b7917accb8ead4cd7f5cbd9"
+        }
+      ],
+      "sizeGigabytes": 3.54,
+      "turnsPassed": 0.9091,
+      "seriousMistakes": 2,
+      "minorOnly": 2,
+      "byKind": {
+        "requests": {
+          "passed": 16,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 21,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 1202,
+      "decisionP90Ms": 2279,
+      "decisionMaxMs": 3665,
+      "generatedTokens": 1100,
+      "loadSeconds": 4.5,
+      "peakMemoryGigabytes": 32
     },
     {
       "id": "minicpm5-2b",
@@ -1662,6 +2016,180 @@
       "peakMemoryGigabytes": 4.17
     },
     {
+      "id": "gemma-4-e2b-q8",
+      "score": 54,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 27,
+          "points": 12.3,
+          "why": "64% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 52,
+          "points": 7.7,
+          "why": "serious mistakes on 12% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 77,
+          "points": 19.2,
+          "why": "0.7 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 100,
+          "points": 10,
+          "why": "0.8 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "Gemma 4 E2B (Q8_0)",
+      "modelClass": "small",
+      "maker": "Google",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF",
+      "files": [
+        {
+          "name": "gemma-4-E2B-it-Q8_0.gguf",
+          "bytes": 5048352864,
+          "sha256": "605d3c2647d7c58c1e4b5375ccb5702acf94c2611b4c8d4877812f8fdd32d053"
+        }
+      ],
+      "sizeGigabytes": 5.05,
+      "turnsPassed": 0.6364,
+      "seriousMistakes": 4,
+      "minorOnly": 16,
+      "byKind": {
+        "requests": {
+          "passed": 0,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 0,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 675,
+      "decisionP90Ms": 818,
+      "decisionMaxMs": 869,
+      "generatedTokens": 356,
+      "loadSeconds": 1,
+      "peakMemoryGigabytes": 1.34
+    },
+    {
+      "id": "minicpm5-1b",
+      "score": 54,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 27,
+          "points": 12.3,
+          "why": "64% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 52,
+          "points": 7.7,
+          "why": "serious mistakes on 12% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 76,
+          "points": 19.1,
+          "why": "0.7 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 100,
+          "points": 10,
+          "why": "0.8 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "MiniCPM5 1B (Q4_K_M)",
+      "modelClass": "small",
+      "maker": "OpenBMB",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/openbmb/MiniCPM5-1B-GGUF",
+      "files": [
+        {
+          "name": "MiniCPM5-1B-Q4_K_M.gguf",
+          "bytes": 688065920,
+          "sha256": "81b64d05a23b17b34c475f42b3e72fbde62d4b92cc34541f7a8031d0752deafa"
+        }
+      ],
+      "sizeGigabytes": 0.69,
+      "turnsPassed": 0.6364,
+      "seriousMistakes": 4,
+      "minorOnly": 16,
+      "byKind": {
+        "requests": {
+          "passed": 0,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 0,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 685,
+      "decisionP90Ms": 842,
+      "decisionMaxMs": 922,
+      "generatedTokens": 1570,
+      "loadSeconds": 0.6,
+      "peakMemoryGigabytes": 3.37
+    },
+    {
       "id": "nemotron-3.5-bolt-e4b",
       "score": 53,
       "coverage": 100,
@@ -2097,6 +2625,93 @@
       "generatedTokens": 212,
       "loadSeconds": 2.8,
       "peakMemoryGigabytes": 19
+    },
+    {
+      "id": "qwen3.5-0.8b-q8",
+      "score": 44,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 24,
+          "points": 10.9,
+          "why": "62% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 39,
+          "points": 5.9,
+          "why": "serious mistakes on 15% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 91,
+          "points": 4.5,
+          "why": "2% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 64,
+          "points": 16.1,
+          "why": "1.0 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 66,
+          "points": 6.6,
+          "why": "2.2 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "Qwen3.5 0.8B (Q8_0)",
+      "modelClass": "small",
+      "maker": "Qwen",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF",
+      "files": [
+        {
+          "name": "Qwen3.5-0.8B-Q8_0.gguf",
+          "bytes": 811843840,
+          "sha256": "0ad885ffd4bb022fc4f0d33a3308fa108ef8613159d3b3a67e23abca056b7a6c"
+        }
+      ],
+      "sizeGigabytes": 0.81,
+      "turnsPassed": 0.6212,
+      "seriousMistakes": 5,
+      "minorOnly": 15,
+      "byKind": {
+        "requests": {
+          "passed": 1,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 7,
+          "total": 8
+        }
+      },
+      "toolCalls": 161,
+      "invalidToolCalls": 3,
+      "decisionMedianMs": 1049,
+      "decisionP90Ms": 2201,
+      "decisionMaxMs": 2582,
+      "generatedTokens": 11471,
+      "loadSeconds": 0.6,
+      "peakMemoryGigabytes": 4.19
     },
     {
       "id": "phi-4-mini",
@@ -2717,6 +3332,18 @@
       "generatedTokens": 120,
       "loadSeconds": 0.4,
       "peakMemoryGigabytes": 0.68
+    },
+    {
+      "id": "raon-1-nano",
+      "name": "Raon-1 nano 3B (Q4_K_M)",
+      "maker": "KRAFTON",
+      "error": "/Users/kevinschaich/.cache/darkgrade-bench/toolbench/llama.cpp/llama-server exited with code 1; see /Users/kevinschaich/repositories/toolbench/results/raw/raon-1-nano.server.log"
+    },
+    {
+      "id": "nemotron-labs-dory-4b",
+      "name": "Nemotron Labs Dory 1.0 4B (Q5_K_M)",
+      "maker": "NVIDIA",
+      "error": "/Users/kevinschaich/.cache/darkgrade-bench/toolbench/llama.cpp/llama-server exited with code 1; see /Users/kevinschaich/repositories/toolbench/results/raw/nemotron-labs-dory-4b.server.log"
     }
   ]
 }
