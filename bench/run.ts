@@ -9,7 +9,7 @@
  */
 import { ANSWER_KEY, type Mistake, type ToolCall, type TurnOutcome, turnCredit } from '@bench/answer-key'
 import { type RunningServer, startServer } from '@bench/engines'
-import { DROPPED_MODELS, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
+import { DROPPED_MODELS, LLAMA_CPP_RELEASE, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
 import { SCRIPT_PATH, scriptTurns } from '@bench/script'
 import { cameraService } from '@main/camera-service'
 import type { CameraSnapshot } from '@bench/simulated-camera'
@@ -22,6 +22,7 @@ import type { StudioViewState } from '@shared/ipc'
 import { createHash } from 'node:crypto'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 import * as z from 'zod/v4'
 
@@ -330,9 +331,18 @@ async function benchmarkModel(model: TextModel, pass: number, passes: number): P
         decisionMaxMs: percentile(decisions, 1),
         generatedTokens: records.reduce((sum, record) => sum + record.generatedTokens, 0),
         loadSeconds: Number((server.loadMs / 1000).toFixed(1)),
-        peakMemoryGigabytes: Number((server.peakFootprintBytes / 1e9).toFixed(2)),
+        // macOS leaves the memory-mapped model file out of a process's footprint, so it's added back.
+        peakMemoryGigabytes: Number(((server.peakFootprintBytes + statSync(modelPath).size) / 1e9).toFixed(2)),
     }
     return { row, turns: records }
+}
+
+/** A failure as it's published: the plain reason, and no paths from the machine that ran it. */
+function publishableError(message: string, model: TextModel): string {
+    const log = existsSync(join(RAW_DIRECTORY, `${model.id}.server.log`)) ? readFileSync(join(RAW_DIRECTORY, `${model.id}.server.log`), 'utf8') : ''
+    const architecture = log.match(/unknown model architecture: '([^']+)'/)?.[1]
+    if (architecture) return `Couldn't run: llama.cpp ${LLAMA_CPP_RELEASE} doesn't support this model's architecture ("${architecture}") yet.`
+    return message.replaceAll(ROOT, '.').replaceAll(homedir(), '~')
 }
 
 const passPath = (id: string, pass: number): string => join(PASSES_DIRECTORY, `${id}.${pass}.json`)
@@ -442,7 +452,7 @@ async function main(): Promise<void> {
                 stopModel(model.id)
                 process.exit(STOPPED_EXIT_CODE)
             }
-            const message = error instanceof Error ? error.message : String(error)
+            const message = publishableError(error instanceof Error ? error.message : String(error), model)
             console.log(`  ${model.id} failed: ${message}`)
             failModel(model.id, message)
             rows.set(model.id, { id: model.id, name: model.name, maker: model.maker, error: message })
