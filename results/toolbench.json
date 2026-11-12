@@ -1,7 +1,7 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-12T04:04:12.875Z",
+  "date": "2026-11-12T04:06:13.534Z",
   "hardware": {
     "machine": "Mac16,6",
     "chip": "Apple M4 Max",
@@ -1575,6 +1575,180 @@
       "peakMemoryGigabytes": 3.55
     },
     {
+      "id": "qwen3.5-0.8b",
+      "score": 57,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 39,
+          "points": 17.7,
+          "why": "70% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 39,
+          "points": 5.9,
+          "why": "serious mistakes on 15% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 19,
+          "points": 1,
+          "why": "16% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 92,
+          "points": 23,
+          "why": "0.4 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 98,
+          "points": 9.8,
+          "why": "1.1 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "Qwen3.5 0.8B (Q4_K_M)",
+      "modelClass": "small",
+      "maker": "Qwen",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF",
+      "files": [
+        {
+          "name": "Qwen3.5-0.8B-Q4_K_M.gguf",
+          "bytes": 532517120,
+          "sha256": "bd258782e35f7f458f8aced1adc053e6e92e89bc735ba3be89d38a06121dc517"
+        }
+      ],
+      "sizeGigabytes": 0.53,
+      "turnsPassed": 0.697,
+      "seriousMistakes": 5,
+      "minorOnly": 10,
+      "byKind": {
+        "requests": {
+          "passed": 8,
+          "total": 20
+        },
+        "questions": {
+          "passed": 3,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 0,
+          "total": 1
+        },
+        "video": {
+          "passed": 7,
+          "total": 8
+        }
+      },
+      "toolCalls": 31,
+      "invalidToolCalls": 5,
+      "decisionMedianMs": 398,
+      "decisionP90Ms": 1056,
+      "decisionMaxMs": 1881,
+      "generatedTokens": 3553,
+      "loadSeconds": 0.7,
+      "peakMemoryGigabytes": 4.17
+    },
+    {
+      "id": "nemotron-3.5-bolt-e4b",
+      "score": 53,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 36,
+          "points": 16.4,
+          "why": "68% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 52,
+          "points": 7.7,
+          "why": "serious mistakes on 12% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 62,
+          "points": 15.4,
+          "why": "1.2 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 84,
+          "points": 8.4,
+          "why": "1.4 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "Nemotron 3.5 Bolt E4B (UD-Q4_K_XL)",
+      "modelClass": "small",
+      "maker": "NVIDIA",
+      "licence": "NVIDIA Open Model",
+      "source": "https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Bolt-E4B-GGUF",
+      "files": [
+        {
+          "name": "NVIDIA-Nemotron-3.5-Bolt-E4B-UD-Q4_K_XL.gguf",
+          "bytes": 5060482240,
+          "sha256": "84ff34f5834b929043f5ae74799e8d562d4056998f6a5923ceb44831e8ad84d6"
+        }
+      ],
+      "sizeGigabytes": 5.06,
+      "turnsPassed": 0.6818,
+      "seriousMistakes": 4,
+      "minorOnly": 13,
+      "byKind": {
+        "requests": {
+          "passed": 3,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 4,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 1155,
+      "decisionP90Ms": 1449,
+      "decisionMaxMs": 2050,
+      "generatedTokens": 448,
+      "loadSeconds": 1,
+      "peakMemoryGigabytes": 3.15
+    },
+    {
       "id": "g9v3-3b",
       "score": 51,
       "coverage": 100,
@@ -2543,18 +2717,6 @@
       "generatedTokens": 120,
       "loadSeconds": 0.4,
       "peakMemoryGigabytes": 0.68
-    },
-    {
-      "id": "qwen3.5-0.8b",
-      "name": "Qwen3.5 0.8B (Q4_K_M)",
-      "maker": "Qwen",
-      "error": "/Users/kevinschaich/.cache/darkgrade-bench/toolbench/llama.cpp/llama-server exited with code 1; see /Users/kevinschaich/repositories/toolbench/results/raw/qwen3.5-0.8b.server.log"
-    },
-    {
-      "id": "nemotron-3.5-bolt-e4b",
-      "name": "Nemotron 3.5 Bolt E4B (UD-Q4_K_XL)",
-      "maker": "NVIDIA",
-      "error": "/Users/kevinschaich/.cache/darkgrade-bench/toolbench/llama.cpp/llama-server exited with code 1; see /Users/kevinschaich/repositories/toolbench/results/raw/nemotron-3.5-bolt-e4b.server.log"
     }
   ]
 }
