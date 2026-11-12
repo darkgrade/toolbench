@@ -9,7 +9,7 @@
  */
 import { ANSWER_KEY, type ToolCall, type TurnOutcome } from '@bench/answer-key'
 import { type RunningServer, startServer } from '@bench/engines'
-import { LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
+import { DROPPED_MODELS, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
 import { SCRIPT_PATH, scriptTurns } from '@bench/script'
 import { cameraService } from '@main/camera-service'
 import type { CameraSnapshot } from '@bench/simulated-camera'
@@ -17,6 +17,7 @@ import { studioView } from '@main/studio-view'
 import { STUDIO_TOOLS, beginChangeGroup, cameraStatus, endChangeGroup, findTool } from '@main/tools/studio-tools'
 import { AGENT_INSTRUCTIONS } from '@bench/system-prompt'
 import { toolScore } from '@bench/tool-score'
+import { failModel, finishModel, startModel, stepDone } from '@bench/progress'
 import type { StudioViewState } from '@shared/ipc'
 import { createHash } from 'node:crypto'
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -35,7 +36,14 @@ const DARKGRADE = process.env.DARKGRADE_PATH ?? resolve(ROOT, '..', 'darkgrade')
 const RESULTS_VERSION = 1
 /** Studio's assistant allows this many model calls per request. */
 const MAXIMUM_STEPS = 5
-const STEP_TIMEOUT_MS = 180_000
+/**
+ * Every model gets this long to decide: its first action, or its answer when it shouldn't act. Past it
+ * the turn is cut off and counts as wrong. As in Darkgrade Studio, a tool runs as soon as the model
+ * calls it and the short reply comes after, so the reply isn't on this clock.
+ */
+export const TURN_LIMIT_MS = 10_000
+/** After acting, the reply and any follow-up calls get this long before the turn moves on (not scored). */
+const AFTER_ACTION_LIMIT_MS = 30_000
 const STARTING_VIEW: StudioViewState = { scope: 'histogram', zebras: false, zebraLevelPercent: 95, focusPeaking: false, peakingSensitivity: 50 }
 
 const OPENAI_TOOLS = STUDIO_TOOLS.map(tool => ({ type: 'function' as const, function: { name: tool.name, description: tool.description, parameters: z.toJSONSchema(tool.inputSchema) } }))
@@ -64,14 +72,14 @@ interface Step {
 }
 
 /** One streamed chat completion with Studio's tools, timed. */
-async function step(url: string, messages: ChatMessage[]): Promise<Step> {
+async function step(url: string, messages: ChatMessage[], signal: AbortSignal): Promise<Step> {
     const startedMs = performance.now()
     const record: Step = { firstTokenMs: null, endedMs: 0, promptTokens: null, generatedTokens: null, generatedTokensPerSecond: null, content: '', calls: [] }
     const response = await fetch(`${url}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ messages, tools: OPENAI_TOOLS, stream: true }),
-        signal: AbortSignal.timeout(STEP_TIMEOUT_MS),
+        signal,
     })
     if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}: ${(await response.text()).slice(0, 300)}`)
     const decoder = new TextDecoder()
@@ -134,6 +142,8 @@ interface TurnRecord {
     failures: string[]
     reply: string
     calls: ToolCall[]
+    /** Cut off at TURN_LIMIT_MS. */
+    timedOut: boolean
     /** From sending the turn until the model finished deciding its first action (or its reply). */
     decisionMs: number | null
     totalMs: number
@@ -141,6 +151,7 @@ interface TurnRecord {
     generatedTokens: number
 }
 
+/** One turn: the script's words appended to the conversation so far, as Studio's assistant hears them. */
 async function runTurn(url: string, conversation: ChatMessage[], text: string): Promise<Omit<TurnRecord, 'turn' | 'said' | 'kind' | 'expected' | 'passed' | 'failures'>> {
     const startedMs = performance.now()
     conversation.push({ role: 'user', content: `${text}\n\nCAMERA NOW: ${JSON.stringify(cameraStatus())}` })
@@ -149,20 +160,27 @@ async function runTurn(url: string, conversation: ChatMessage[], text: string): 
     let decisionMs: number | null = null
     let steps = 0
     let generatedTokens = 0
+    let timedOut = false
+    const deciding = AbortSignal.timeout(TURN_LIMIT_MS)
+    let afterAction: AbortSignal | null = null
     beginChangeGroup()
     try {
         for (let index = 0; index < MAXIMUM_STEPS; index++) {
             let result: Step
             try {
-                result = await step(url, conversation)
+                result = await step(url, conversation, afterAction ?? deciding)
             } catch (error) {
-                reply = `(error: ${error instanceof Error ? error.message : String(error)})`
+                timedOut = !afterAction && deciding.aborted
+                reply = timedOut || afterAction?.aborted ? reply : `(error: ${error instanceof Error ? error.message : String(error)})`
                 break
             }
             steps++
             generatedTokens += result.generatedTokens ?? 0
             const acts = result.calls.some(call => CHANGING_TOOLS.has(call.function.name))
-            if (decisionMs === null && (acts || result.calls.length === 0)) decisionMs = performance.now() - startedMs
+            if (decisionMs === null && (acts || result.calls.length === 0)) {
+                decisionMs = performance.now() - startedMs
+                afterAction = AbortSignal.timeout(AFTER_ACTION_LIMIT_MS)
+            }
             conversation.push({ role: 'assistant', content: result.content || null, ...(result.calls.length ? { tool_calls: result.calls } : {}) })
             reply = result.content.trim()
             if (result.calls.length === 0) break
@@ -175,7 +193,7 @@ async function runTurn(url: string, conversation: ChatMessage[], text: string): 
     } finally {
         endChangeGroup()
     }
-    return { reply, calls, decisionMs, totalMs: performance.now() - startedMs, steps, generatedTokens }
+    return { reply, calls, decisionMs: decisionMs ?? (timedOut ? TURN_LIMIT_MS : null), totalMs: performance.now() - startedMs, steps, generatedTokens, timedOut }
 }
 
 function percentile(values: number[], fraction: number): number | null {
@@ -206,6 +224,7 @@ function runningEngines(): string[] {
 async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>> {
     if (runningEngines().length) throw new Error('another llama-server is still running, refusing to measure')
     const modelPath = join(LLAMA_MODELS, model.repository.replace('/', '__'), model.file)
+    startModel(model.id, scriptTurns().length)
     const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`))
     const turns = scriptTurns()
     const records: TurnRecord[] = []
@@ -226,8 +245,12 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
             const result = await runTurn(server.url, conversation, text)
             const after = { camera: structuredClone(cameraService.getState()), view: { ...studioView.getState()! } }
             const outcome: TurnOutcome = { before, after, events: cameraService.events.slice(eventCount), calls: result.calls, reply: result.reply }
-            const failures = expectation.check(outcome)
+            const failures = [...(result.timedOut ? [`took longer than ${TURN_LIMIT_MS / 1000} s`] : []), ...expectation.check(outcome)]
             records.push({ turn, said: text, kind: expectation.kind, expected: expectation.expected, passed: failures.length === 0, failures, ...result })
+            stepDone(model.id, records.length, turns.length, `Turn ${turn}: "${text.length > 60 ? `${text.slice(0, 57)}…` : text}"`, {
+                passed: failures.length === 0,
+                note: failures.length ? failures.join('; ') : `${((result.decisionMs ?? result.totalMs) / 1000).toFixed(1)} s`,
+            })
             console.log(`  ${model.id} turn ${turn}: ${failures.length ? `FAIL ${failures.join('; ')}` : 'pass'} (${Math.round(result.decisionMs ?? result.totalMs)} ms)`)
         }
     } finally {
@@ -240,6 +263,8 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
     const invalidCallShare = calls.length ? calls.filter(call => !call.valid).length / calls.length : 0
     const decisionMedianMs = percentile(decisions, 0.5)
     const decisionP90Ms = percentile(decisions, 0.9)
+    const scored = toolScore({ turnsPassed, invalidCallShare, decisionMedianMs, decisionP90Ms })
+    finishModel(model.id, { score: scored.score ?? '–', 'turns right': `${Math.round(turnsPassed * 100)}%`, 'typical wait': `${((decisionMedianMs ?? 0) / 1000).toFixed(1)} s` })
     const byKind = (kind: string) => {
         const ofKind = records.filter(record => record.kind === kind)
         return { passed: ofKind.filter(record => record.passed).length, total: ofKind.length }
@@ -248,7 +273,7 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
     writeFileSync(join(MODEL_DIRECTORY, `${model.id}.json`), `${JSON.stringify({ id: model.id, turns: records })}\n`)
     return {
         id: model.id,
-        ...toolScore({ turnsPassed, invalidCallShare, decisionMedianMs, decisionP90Ms }),
+        ...scored,
         name: model.name,
         maker: model.maker,
         licence: model.licence,
@@ -292,12 +317,14 @@ async function runDetails(): Promise<Record<string, unknown>> {
             turns: scriptTurns().length,
             tools: { source: 'darkgrade/darkgrade apps/studio/src/main/tools/studio-tools.ts', commit: command('git', '-C', DARKGRADE, 'rev-parse', 'HEAD'), count: STUDIO_TOOLS.length },
         },
+        dropped: DROPPED_MODELS,
         method: {
             settings: "Each model on llama-server with its defaults; the only arguments are the model file and a port. Requests carry no sampling or reasoning options, so models think if that's their default.",
             input: "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
             tools: "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
             accuracy: 'Each turn is checked against the answer key: what changed on the camera and in Studio, which tools were called and in what order. Requests may make extra read-only calls; turns that are the video itself may make none.',
             latency: "From sending a turn to the model finishing its first action, or its reply when it shouldn't act.",
+            timeLimit: `${TURN_LIMIT_MS / 1000} s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a ${TURN_LIMIT_MS / 1000} s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.`,
             score: 'A 0–100 score from fixed scales, so it doesn\'t change when other models are added: right action (55%: half the turns right scores 0, all of them 100), clean tool calls (15%: one call in five invalid scores 0, none 100), typical wait (20%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 30 s scores 0, 1 s scores 100), waits on a log scale.',
             isolation: 'One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.',
             runs: 'One pass per model.',
@@ -345,6 +372,7 @@ async function main(): Promise<void> {
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
             console.log(`  ${model.id} failed: ${message}`)
+            failModel(model.id, message)
             rows.set(model.id, { id: model.id, name: model.name, maker: model.maker, error: message })
             if (runningEngines().length) throw new Error(`stopping: llama-server still running after ${model.id} failed`)
         }

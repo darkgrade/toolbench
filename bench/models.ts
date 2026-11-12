@@ -32,6 +32,12 @@ const LICENCES: Record<string, string> = {
     'ornith-1.5-9b': 'Unstated', 'glm-4.7-flash': 'MIT', 'nemotron-3.5-lightning': 'OpenMDW', 'lfm2.5-8b-a1b': 'LFM Open', 'lfm2-24b-a2b': 'LFM Open', 'xlam-2-8b': 'CC-BY-NC-4.0',
 }
 
+/** Models tried and dropped, with why; shown on the site. */
+export const DROPPED_MODELS: { name: string; why: string }[] = [
+    { name: 'Granite 4.2 3B (IBM)', why: 'Tried and dropped: it failed almost every request, running past the 10 s limit on 25 of 29 turns.' },
+    { name: 'Granite 4.2 8B (IBM)', why: 'Dropped with the 3B; not tested.' },
+]
+
 export const TEXT_MODELS: TextModel[] = [
     text('qwen3.5-4b', 'Qwen3.5 4B (Q4_K_M)', 'unsloth/Qwen3.5-4B-GGUF', 'Qwen3.5-4B-Q4_K_M.gguf'),
     text('qwen3.5-9b', 'Qwen3.5 9B (Q4_K_M)', 'unsloth/Qwen3.5-9B-GGUF', 'Qwen3.5-9B-Q4_K_M.gguf'),
@@ -50,8 +56,6 @@ export const TEXT_MODELS: TextModel[] = [
     text('gemma-4-12b', 'Gemma 4 12B (Q4_0)', 'ggml-org/gemma-4-12B-it-GGUF', 'gemma-4-12B-it-Q4_0.gguf'),
     text('gemma-4-e4b', 'Gemma 4 E4B (Q4_0)', 'ggml-org/gemma-4-E4B-it-GGUF', 'gemma-4-E4B-it-Q4_0.gguf'),
     text('nemotron-3.5-lightning', 'Nemotron 3.5 Lightning 30B-A3B (UD-IQ2_M)', 'unsloth/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF', 'NVIDIA-Nemotron-3.5-Lightning-30B-A3B-UD-IQ2_M.gguf'),
-    text('granite-4.2-8b', 'Granite 4.2 8B (Q4_K_M)', 'ibm-granite/granite-4.2-8b-GGUF', 'granite-4.2-8b-Q4_K_M.gguf'),
-    text('granite-4.2-3b', 'Granite 4.2 3B (Q4_K_M)', 'ibm-granite/granite-4.2-3b-GGUF', 'granite-4.2-3b-Q4_K_M.gguf'),
     text('lfm2.5-8b-a1b', 'LFM2.5 8B-A1B (Q4_K_M)', 'LiquidAI/LFM2.5-8B-A1B-GGUF', 'LFM2.5-8B-A1B-Q4_K_M.gguf'),
     text('lfm2-24b-a2b', 'LFM2 24B-A2B (Q4_K_M)', 'LiquidAI/LFM2-24B-A2B-GGUF', 'LFM2-24B-A2B-Q4_K_M.gguf'),
     text('ministral-3-14b', 'Ministral 3 14B (Q4_K_M)', 'mistralai/Ministral-3-14B-Instruct-2512-GGUF', 'Ministral-3-14B-Instruct-2512-Q4_K_M.gguf'),

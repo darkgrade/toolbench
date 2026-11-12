@@ -6,9 +6,10 @@
  *
  *   bun run bench [-- --models id,id]
  */
-import { TEXT_MODELS } from '@bench/models'
+import { LLAMA_MODELS, TEXT_MODELS } from '@bench/models'
+import { finishRun, startRun } from '@bench/progress'
 import { spawnSync } from 'node:child_process'
-import { existsSync, writeFileSync } from 'node:fs'
+import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
@@ -55,6 +56,13 @@ const run = (...argumentsGiven: string[]): number =>
 // Studio's tools keep their undo history in memory, so each model gets a fresh process.
 if (run('--perfect') !== 0) process.exit(1)
 const listed = process.argv.includes('--models') ? process.argv[process.argv.indexOf('--models') + 1].split(',') : null
-for (const model of TEXT_MODELS.filter(candidate => !listed || listed.includes(candidate.id))) {
+const models = TEXT_MODELS.filter(candidate => !listed || listed.includes(candidate.id))
+const sizeGigabytes = (repository: string, file: string): number => {
+    const path = join(LLAMA_MODELS, repository.replace('/', '__'), file)
+    return existsSync(path) ? statSync(path).size / 1e9 : 5
+}
+startRun('toolbench', models.map(model => ({ id: model.id, name: model.name, sizeGigabytes: sizeGigabytes(model.repository, model.file) })))
+for (const model of models) {
     if (run('--models', model.id) !== 0) process.exit(1)
 }
+finishRun()

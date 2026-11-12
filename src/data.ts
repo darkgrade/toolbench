@@ -56,6 +56,7 @@ export interface RunDetails {
     hardware?: { machine?: string; chip?: string; memoryGigabytes?: number; macOS?: string }
     input?: { turns?: number; tools?: { count?: number; commit?: string } }
     method?: Record<string, string>
+    dropped?: { name: string; why: string }[]
     models: ModelSummary[]
 }
 

@@ -7,6 +7,7 @@ const HEADINGS: Record<string, string> = {
     tools: 'The tools',
     accuracy: 'Right or wrong',
     latency: 'Speed',
+    timeLimit: 'Time limit',
     score: 'The score',
     isolation: 'One model at a time',
     runs: 'Runs',
@@ -31,6 +32,18 @@ export function Method() {
                         <p>{text}</p>
                     </section>
                 ))}
+                {RUN.dropped && RUN.dropped.length > 0 && (
+                    <section>
+                        <h3>Models we dropped</h3>
+                        <ul>
+                            {RUN.dropped.map(model => (
+                                <li key={model.name}>
+                                    <strong>{model.name}</strong>: {model.why}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
                 <h3>Repeat it</h3>
                 <p>
                     Everything is in <a href={`https://github.com/${BENCH.repository}`}>the repository</a>: the script, each recording's checksum, every model's source and file

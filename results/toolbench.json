@@ -1,5 +1,126 @@
 {
-    "benchmark": "toolbench",
-    "version": 1,
-    "models": []
+  "benchmark": "toolbench",
+  "version": 1,
+  "date": "2026-11-12T02:01:12.108Z",
+  "hardware": {
+    "machine": "Mac16,6",
+    "chip": "Apple M4 Max",
+    "memoryGigabytes": 64,
+    "cores": 16,
+    "macOS": "27.0.1 (26A434)"
+  },
+  "engines": {
+    "llamaServer": "version: 0.9.0-dev (build 12283, commit f3b407ca1)",
+    "harness": "bun 1.3.14"
+  },
+  "input": {
+    "script": "script/video-script.md",
+    "scriptSha256": "df770436f614a9a384d86008d83350f187a363380316b5c3070c8a41451ab8df",
+    "turns": 29,
+    "tools": {
+      "source": "darkgrade/darkgrade apps/studio/src/main/tools/studio-tools.ts",
+      "commit": "c4f50e639fa2504df5f3e01d9452e965d12fb490",
+      "count": 18
+    }
+  },
+  "dropped": [
+    {
+      "name": "Granite 4.2 3B (IBM)",
+      "why": "Tried and dropped: it failed almost every request, running past the 10 s limit on 25 of 29 turns."
+    },
+    {
+      "name": "Granite 4.2 8B (IBM)",
+      "why": "Dropped with the 3B; not tested."
+    }
+  ],
+  "method": {
+    "settings": "Each model on llama-server with its defaults; the only arguments are the model file and a port. Requests carry no sampling or reasoning options, so models think if that's their default.",
+    "input": "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
+    "tools": "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
+    "accuracy": "Each turn is checked against the answer key: what changed on the camera and in Studio, which tools were called and in what order. Requests may make extra read-only calls; turns that are the video itself may make none.",
+    "latency": "From sending a turn to the model finishing its first action, or its reply when it shouldn't act.",
+    "timeLimit": "10 s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a 10 s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.",
+    "score": "A 0\u2013100 score from fixed scales, so it doesn't change when other models are added: right action (55%: half the turns right scores 0, all of them 100), clean tool calls (15%: one call in five invalid scores 0, none 100), typical wait (20%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 30 s scores 0, 1 s scores 100), waits on a log scale.",
+    "isolation": "One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.",
+    "runs": "One pass per model."
+  },
+  "models": [
+    {
+      "id": "qwen3.5-4b",
+      "score": 54,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right action",
+          "weight": 55,
+          "score": 52,
+          "points": 28.4,
+          "why": "76% of turns right"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 15,
+          "score": 100,
+          "points": 15,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 20,
+          "score": 36,
+          "points": 7.2,
+          "why": "2.8 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 36,
+          "points": 3.6,
+          "why": "8.9 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "Qwen3.5 4B (Q4_K_M)",
+      "maker": "Qwen",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/unsloth/Qwen3.5-4B-GGUF",
+      "files": [
+        {
+          "name": "Qwen3.5-4B-Q4_K_M.gguf",
+          "bytes": 2740937888,
+          "sha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4"
+        }
+      ],
+      "sizeGigabytes": 2.74,
+      "turnsPassed": 0.7586,
+      "byKind": {
+        "requests": {
+          "passed": 12,
+          "total": 17
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 2,
+          "total": 2
+        },
+        "video": {
+          "passed": 4,
+          "total": 6
+        }
+      },
+      "toolCalls": 24,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 2849,
+      "decisionP90Ms": 8853,
+      "decisionMaxMs": 10000,
+      "generatedTokens": 5025,
+      "loadSeconds": 1.9,
+      "peakMemoryGigabytes": 10
+    }
+  ]
 }
