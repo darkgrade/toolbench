@@ -25,11 +25,11 @@ export interface TextModel {
 const text = (id: string, name: string, repository: string, file: string): TextModel => ({ id, name, maker: MAKERS[id.split('-')[0]] ?? repository.split('/')[0], licence: LICENCES[id] ?? 'Apache-2.0', repository, file })
 
 const MAKERS: Record<string, string> = {
-    'qwen3.5': 'Qwen', 'qwen3.6': 'Qwen', 'qwen3.8': 'Qwen', qwen3: 'Qwen', 'ornith': 'Ornith', saluki: 'Conway Research', bonsai: 'Prism ML', ternary: 'Prism ML',
+    'qwen3.5': 'Qwen', 'qwen3.6': 'Qwen', 'qwen3.8': 'Qwen', qwen3: 'Qwen', 'ornith': 'Ornith', saluki: 'Conway Research', underdog: 'Conway Research', bonsai: 'Prism ML', ternary: 'Prism ML',
     gpt: 'OpenAI', glm: 'Z.ai', gemma: 'Google', nemotron: 'NVIDIA', granite: 'IBM', 'lfm2.5': 'Liquid AI', lfm2: 'Liquid AI', ministral: 'Mistral', mistral: 'Mistral', xlam: 'Salesforce',
 }
 const LICENCES: Record<string, string> = {
-    'ornith-1.5-9b': 'Unstated', 'glm-4.7-flash': 'MIT', 'nemotron-3.5-lightning': 'OpenMDW', 'lfm2.5-8b-a1b': 'LFM Open', 'lfm2-24b-a2b': 'LFM Open', 'xlam-2-8b': 'CC-BY-NC-4.0',
+    'ornith-1.5-9b': 'Unstated', 'glm-4.7-flash': 'MIT', 'nemotron-3.5-lightning': 'OpenMDW', 'lfm2.5-8b-a1b': 'LFM Open', 'lfm2-24b-a2b': 'LFM Open', 'xlam-2-8b': 'CC-BY-NC-4.0', 'underdog-poodle-4b': 'CC-BY-NC-4.0',
 }
 
 /** Models tried and dropped, with why; shown on the site. */
@@ -47,6 +47,7 @@ export const TEXT_MODELS: TextModel[] = [
     text('qwen3.8-27b', 'Qwen3.8 27B (UD-Q4_K_M)', 'unsloth/Qwen3.8-27B-GGUF', 'Qwen3.8-27B-UD-Q4_K_M.gguf'),
     text('qwen3-4b-2507', 'Qwen3 4B Instruct 2507 (Q4_K_M)', 'unsloth/Qwen3-4B-Instruct-2507-GGUF', 'Qwen3-4B-Instruct-2507-Q4_K_M.gguf'),
     text('ornith-1.5-9b', 'Ornith 1.5 9B (Q4_K_M)', 'ornith-ai/Ornith-1.5-9B-GGUF', 'Ornith-1.5-9B-Q4_K_M.gguf'),
+    text('underdog-poodle-4b', 'Underdog Poodle 4B (Q4_K_M)', 'mradermacher/Underdog-Poodle-4B-GGUF', 'Underdog-Poodle-4B.Q4_K_M.gguf'),
     text('saluki-27b', 'Underdog Saluki 27B 1.0 (IQ2 mix)', 'ConwayResearch/Underdog-Saluki-27B-1.0', 'Underdog-Saluki-27B-1.0-IQ2-mix.gguf'),
     text('bonsai-27b', 'Bonsai 27B (Q1_0)', 'prism-ml/Bonsai-27B-gguf', 'Bonsai-27B-Q1_0.gguf'),
     text('ternary-bonsai-2-27b', 'Ternary Bonsai 2 27B (Q2_0)', 'prism-ml/Ternary-Bonsai-2-27B-gguf', 'Ternary-Bonsai-2-27B-Q2_0.gguf'),
