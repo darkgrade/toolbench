@@ -80,7 +80,8 @@ async function step(url: string, messages: ChatMessage[], signal: AbortSignal): 
     const response = await fetch(`${url}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages, tools: OPENAI_TOOLS, stream: true }),
+        // One slot for every request, as Studio does: a turn cut off at the limit must not send the next to an empty slot that re-reads everything.
+        body: JSON.stringify({ messages, tools: OPENAI_TOOLS, stream: true, id_slot: 0 }),
         signal,
     })
     if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}: ${(await response.text()).slice(0, 300)}`)
@@ -235,7 +236,7 @@ async function warmUp(url: string): Promise<void> {
     await fetch(`${url}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages: [{ role: 'system', content: AGENT_INSTRUCTIONS }, { role: 'user', content: 'Ready?' }], tools: OPENAI_TOOLS, max_tokens: 1 }),
+        body: JSON.stringify({ messages: [{ role: 'system', content: AGENT_INSTRUCTIONS }, { role: 'user', content: 'Ready?' }], tools: OPENAI_TOOLS, max_tokens: 1, id_slot: 0 }),
     })
 }
 
