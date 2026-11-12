@@ -10,7 +10,9 @@
         "typecheck:bench": "bun bench/launch.ts --typecheck",
         "dev": "vite",
         "build": "tsc --noEmit && vite build && vite build --ssr src/server.tsx --outDir .server && bun scripts/prerender.ts",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "bench:stop": "bun bench/progress.ts --stop",
+        "bench:status": "bun bench/progress.ts"
     },
     "dependencies": {
         "@kevinschaich/components": "^0.8.0",

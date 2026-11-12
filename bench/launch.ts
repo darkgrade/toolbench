@@ -4,12 +4,16 @@
  * simulated camera and Electron stand-in, and everything else at the darkgrade checkout
  * (DARKGRADE_PATH, by default ../darkgrade), then starts bench/run.ts with it.
  *
- *   bun run bench [-- --models id,id]
+ *   bun run bench [-- --models id,id] [-- --resume]
+ *   bun run bench:stop      stop after the current turn (or the Stop button on /progress)
+ *
+ * --resume skips models already in results/toolbench.json from a run of the same script.
  */
 import { LLAMA_MODELS, TEXT_MODELS } from '@bench/models'
-import { finishRun, startRun } from '@bench/progress'
+import { finishRun, startRun, stopRequested } from '@bench/progress'
+import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { existsSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
@@ -61,8 +65,33 @@ const sizeGigabytes = (repository: string, file: string): number => {
     const path = join(LLAMA_MODELS, repository.replace('/', '__'), file)
     return existsSync(path) ? statSync(path).size / 1e9 : 5
 }
-startRun('toolbench', models.map(model => ({ id: model.id, name: model.name, sizeGigabytes: sizeGigabytes(model.repository, model.file) })))
-for (const model of models) {
-    if (run('--models', model.id) !== 0) process.exit(1)
+/** Models already done with this exact script, kept when resuming. */
+function alreadyDone(): Map<string, Record<string, string | number>> {
+    const resultsPath = join(root, 'results', 'toolbench.json')
+    if (!process.argv.includes('--resume') || !existsSync(resultsPath)) return new Map()
+    const results = JSON.parse(readFileSync(resultsPath, 'utf8')) as { input?: { scriptSha256?: string }; models?: { id: string; error?: string; score?: number; turnsPassed?: number; seriousMistakes?: number; decisionMedianMs?: number }[] }
+    const script = createHash('sha256').update(readFileSync(join(root, 'script', 'video-script.md'))).digest('hex')
+    if (results.input?.scriptSha256 !== script) return new Map()
+    return new Map(
+        (results.models ?? [])
+            .filter(model => !model.error && model.score !== undefined)
+            .map(model => [model.id, { score: model.score ?? '–', 'turns right': `${Math.round((model.turnsPassed ?? 0) * 100)}%`, 'serious mistakes': model.seriousMistakes ?? 0, 'typical wait': `${((model.decisionMedianMs ?? 0) / 1000).toFixed(1)} s` }])
+    )
 }
-finishRun()
+
+const done = alreadyDone()
+startRun('toolbench', models.map(model => ({ id: model.id, name: model.name, sizeGigabytes: sizeGigabytes(model.repository, model.file) })), done)
+process.on('SIGINT', () => {
+    finishRun('stopped')
+    process.exit(130)
+})
+for (const model of models.filter(candidate => !done.has(candidate.id))) {
+    if (stopRequested()) break
+    const status = run('--models', model.id)
+    if (status === 3) break
+    if (status !== 0) {
+        finishRun('stopped')
+        process.exit(1)
+    }
+}
+finishRun(stopRequested() ? 'stopped' : 'finished')

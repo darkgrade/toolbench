@@ -17,7 +17,7 @@ import { studioView } from '@main/studio-view'
 import { STUDIO_TOOLS, beginChangeGroup, cameraStatus, endChangeGroup, findTool } from '@main/tools/studio-tools'
 import { AGENT_INSTRUCTIONS } from '@bench/system-prompt'
 import { toolScore } from '@bench/tool-score'
-import { failModel, finishModel, startModel, stepDone } from '@bench/progress'
+import { failModel, finishModel, startModel, stepDone, stopModel, stopRequested } from '@bench/progress'
 import type { StudioViewState } from '@shared/ipc'
 import { createHash } from 'node:crypto'
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -226,6 +226,12 @@ function runningEngines(): string[] {
         .filter(line => (line.trim().split(/\s+/)[1] ?? '').split('/').at(-1) === 'llama-server')
 }
 
+/** Thrown between turns when a stop has been asked for; the model is left out of the results. */
+class StopRequested extends Error {}
+
+/** Exit code that tells launch.ts the run was stopped on purpose. */
+export const STOPPED_EXIT_CODE = 3
+
 async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>> {
     if (runningEngines().length) throw new Error('another llama-server is still running, refusing to measure')
     const modelPath = join(LLAMA_MODELS, model.repository.replace('/', '__'), model.file)
@@ -240,6 +246,7 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
     const perfect = JSON.parse(readFileSync(PERFECT_PATH, 'utf8')) as Record<string, { camera: CameraSnapshot; view: StudioViewState }>
     try {
         for (const { turn, text } of turns) {
+            if (stopRequested()) throw new StopRequested()
             const expectation = ANSWER_KEY.find(entry => entry.turn === turn)
             if (!expectation) throw new Error(`no answer key entry for turn ${turn}`)
             // Each turn starts where a perfect run would be, so one mistake isn't counted again in later turns.
@@ -379,6 +386,11 @@ async function main(): Promise<void> {
         try {
             rows.set(model.id, await benchmarkModel(model))
         } catch (error) {
+            if (error instanceof StopRequested) {
+                console.log(`  ${model.id} stopped`)
+                stopModel(model.id)
+                process.exit(STOPPED_EXIT_CODE)
+            }
             const message = error instanceof Error ? error.message : String(error)
             console.log(`  ${model.id} failed: ${message}`)
             failModel(model.id, message)
