@@ -108,7 +108,7 @@ export async function toolbench() {
             const passes = passesFor(model)
             const key = `${input.key}|${modelStamp(model)}`
             const results = []
-            for (let pass = 1; pass <= passes; pass++) results.push(await passTask.run({ model: model.id, pass, passes, force: input.force, key }, { label: passes > 1 ? `Pass ${pass} of ${passes}` : 'Pass' }))
+            for (let pass = 1; pass <= passes; pass++) results.push(await passTask.run({ model: model.id, pass, passes, force: input.force, key }, { label: passes > 1 ? `Pass ${pass} of ${passes}` : 'Pass', key: `pass:${model.id}:${pass}` }))
             // The last pass publishes the median when it runs; when every pass was kept, publish it from them.
             if (results.at(-1)!.kept) await runHarness(['--models', model.id, '--pass', String(passes), '--passes', String(passes), '--median'], context)
             const row = rowOf(model.id)
@@ -135,20 +135,31 @@ export async function toolbench() {
     const run = task<RunInput, { scored: number; summary: string }>({
         name: 'toolbench',
         timeout: '72h',
-        fn: async input => {
+        fn: async (input, context) => {
             mkdirSync(PASSES_DIRECTORY, { recursive: true })
             const models = input.models ?? TEXT_MODELS.map(model => model.id)
-            await perfect.run({}, { label: 'Perfect run' })
+            await context.plan([
+                { key: 'perfect', label: 'Perfect run', kind: 'perfect' },
+                ...models.flatMap(id => {
+                    const passes = passesFor(modelById(id))
+                    return [
+                        { key: `model:${id}`, label: modelById(id).name, kind: 'model' },
+                        ...Array.from({ length: passes }, (_, index) => ({ key: `pass:${id}:${index + 1}`, label: passes > 1 ? `Pass ${index + 1} of ${passes}` : 'Pass', kind: 'pass', parent: `model:${id}` })),
+                    ]
+                }),
+                { key: 'publish', label: 'Publish', kind: 'publish' },
+            ])
+            await perfect.run({}, { label: 'Perfect run', key: 'perfect' })
             const key = inputKey()
             const rows: Row[] = []
             for (const id of models) {
                 try {
-                    rows.push((await modelTask.run({ model: id, force: input.force, key }, { label: modelById(id).name })).row)
+                    rows.push((await modelTask.run({ model: id, force: input.force, key }, { label: modelById(id).name, key: `model:${id}` })).row)
                 } catch (error) {
                     rows.push({ id, error: error instanceof Error ? error.message : String(error) })
                 }
             }
-            const published = await publishTask.run({ models }, { label: 'Publish' })
+            const published = await publishTask.run({ models }, { label: 'Publish', key: 'publish' })
             const scored = rows.filter(row => !row.error).length
             return { scored, summary: `${scored} of ${rows.length} models scored · ${published.summary}` }
         },
