@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.server/
+.DS_Store
+.darkgrade-tsconfig.json
+# Full model conversations and engine logs: rewritten every run.
+results/raw/

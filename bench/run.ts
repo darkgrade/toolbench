@@ -1,0 +1,356 @@
+/**
+ * Runs every text model through the script and writes results/toolbench.json. Start it with
+ * `bun run bench` (bench/launch.ts), which points Studio's imports at this repo's simulated camera.
+ *
+ * Each model runs alone on llama-server with its defaults. The script's turns are sent one at a time,
+ * word for word, as one conversation, with Studio's system prompt and Studio's real tools (loaded from
+ * the darkgrade checkout). Every tool call runs against the simulated camera, and each turn is checked
+ * against the answer key. See AGENTS.md "Bench conventions".
+ */
+import { ANSWER_KEY, type ToolCall, type TurnOutcome } from '@bench/answer-key'
+import { type RunningServer, startServer } from '@bench/engines'
+import { LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
+import { SCRIPT_PATH, scriptTurns } from '@bench/script'
+import { cameraService } from '@main/camera-service'
+import type { CameraSnapshot } from '@bench/simulated-camera'
+import { studioView } from '@main/studio-view'
+import { STUDIO_TOOLS, beginChangeGroup, cameraStatus, endChangeGroup, findTool } from '@main/tools/studio-tools'
+import { AGENT_INSTRUCTIONS } from '@bench/system-prompt'
+import { toolScore } from '@bench/tool-score'
+import type { StudioViewState } from '@shared/ipc'
+import { createHash } from 'node:crypto'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import * as z from 'zod/v4'
+
+const ROOT = resolve(import.meta.dirname, '..')
+const RESULTS_PATH = join(ROOT, 'results', 'toolbench.json')
+const MODEL_DIRECTORY = join(ROOT, 'results', 'models')
+const RAW_DIRECTORY = join(ROOT, 'results', 'raw')
+const FRAME_PATH = join(RAW_DIRECTORY, 'frame.jpg')
+/** Where the camera and Studio's view should be before each turn, from a perfect run (written by --perfect). */
+const PERFECT_PATH = join(RAW_DIRECTORY, 'perfect-run.json')
+const DARKGRADE = process.env.DARKGRADE_PATH ?? resolve(ROOT, '..', 'darkgrade')
+const RESULTS_VERSION = 1
+/** Studio's assistant allows this many model calls per request. */
+const MAXIMUM_STEPS = 5
+const STEP_TIMEOUT_MS = 180_000
+const STARTING_VIEW: StudioViewState = { scope: 'histogram', zebras: false, zebraLevelPercent: 95, focusPeaking: false, peakingSensitivity: 50 }
+
+const OPENAI_TOOLS = STUDIO_TOOLS.map(tool => ({ type: 'function' as const, function: { name: tool.name, description: tool.description, parameters: z.toJSONSchema(tool.inputSchema) } }))
+const CHANGING_TOOLS = new Set(STUDIO_TOOLS.filter(tool => tool.changesSomething).map(tool => tool.name))
+
+interface WireCall {
+    id: string
+    type: 'function'
+    function: { name: string; arguments: string }
+}
+
+type ChatMessage =
+    | { role: 'system' | 'user'; content: string }
+    | { role: 'assistant'; content: string | null; tool_calls?: WireCall[] }
+    | { role: 'tool'; tool_call_id: string; content: string }
+
+interface Step {
+    firstTokenMs: number | null
+    endedMs: number
+    promptTokens: number | null
+    generatedTokens: number | null
+    generatedTokensPerSecond: number | null
+    content: string
+    calls: WireCall[]
+    error?: string
+}
+
+/** One streamed chat completion with Studio's tools, timed. */
+async function step(url: string, messages: ChatMessage[]): Promise<Step> {
+    const startedMs = performance.now()
+    const record: Step = { firstTokenMs: null, endedMs: 0, promptTokens: null, generatedTokens: null, generatedTokensPerSecond: null, content: '', calls: [] }
+    const response = await fetch(`${url}/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ messages, tools: OPENAI_TOOLS, stream: true }),
+        signal: AbortSignal.timeout(STEP_TIMEOUT_MS),
+    })
+    if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}: ${(await response.text()).slice(0, 300)}`)
+    const decoder = new TextDecoder()
+    let buffered = ''
+    for await (const chunk of response.body) {
+        buffered += decoder.decode(chunk, { stream: true })
+        const lines = buffered.split('\n')
+        buffered = lines.pop() ?? ''
+        for (const line of lines) {
+            if (!line.startsWith('data: ') || line === 'data: [DONE]') continue
+            const event = JSON.parse(line.slice(6))
+            if (event.timings) {
+                record.promptTokens = event.timings.prompt_n
+                record.generatedTokens = event.timings.predicted_n
+                record.generatedTokensPerSecond = event.timings.predicted_per_second
+            }
+            const delta = event.choices?.[0]?.delta ?? {}
+            if (record.firstTokenMs === null && (delta.content || delta.reasoning_content || delta.tool_calls)) record.firstTokenMs = performance.now() - startedMs
+            if (delta.content) record.content += delta.content
+            for (const part of delta.tool_calls ?? []) {
+                const index = part.index ?? record.calls.length
+                record.calls[index] ??= { id: part.id ?? `call_${index}`, type: 'function', function: { name: '', arguments: '' } }
+                if (part.id) record.calls[index].id = part.id
+                if (part.function?.name) record.calls[index].function.name += part.function.name
+                if (part.function?.arguments) record.calls[index].function.arguments += part.function.arguments
+            }
+        }
+    }
+    record.calls = record.calls.filter(Boolean)
+    record.endedMs = performance.now() - startedMs
+    return record
+}
+
+/** Runs one call against Studio's real tool code and the simulated camera. */
+async function runTool(call: WireCall): Promise<{ result: string; record: ToolCall }> {
+    const tool = findTool(call.function.name)
+    let input: Record<string, unknown> = {}
+    try {
+        input = call.function.arguments.trim() ? JSON.parse(call.function.arguments) : {}
+    } catch {
+        return { result: 'Error: the arguments were not valid JSON', record: { name: call.function.name, arguments: {}, valid: false, changesSomething: false } }
+    }
+    const record: ToolCall = { name: call.function.name, arguments: input, valid: Boolean(tool), changesSomething: CHANGING_TOOLS.has(call.function.name) }
+    if (!tool) return { result: `Error: there is no tool called ${call.function.name}`, record }
+    const parsed = tool.inputSchema.safeParse(input)
+    if (!parsed.success) return { result: `Error: ${parsed.error.message}`, record: { ...record, valid: false } }
+    try {
+        return { result: JSON.stringify((await tool.run(parsed.data as Record<string, unknown>)).data), record }
+    } catch (error) {
+        return { result: `Error: ${error instanceof Error ? error.message : String(error)}`, record }
+    }
+}
+
+interface TurnRecord {
+    turn: number
+    said: string
+    kind: string
+    expected: string
+    passed: boolean
+    failures: string[]
+    reply: string
+    calls: ToolCall[]
+    /** From sending the turn until the model finished deciding its first action (or its reply). */
+    decisionMs: number | null
+    totalMs: number
+    steps: number
+    generatedTokens: number
+}
+
+async function runTurn(url: string, conversation: ChatMessage[], text: string): Promise<Omit<TurnRecord, 'turn' | 'said' | 'kind' | 'expected' | 'passed' | 'failures'>> {
+    const startedMs = performance.now()
+    conversation.push({ role: 'user', content: `${text}\n\nCAMERA NOW: ${JSON.stringify(cameraStatus())}` })
+    const calls: ToolCall[] = []
+    let reply = ''
+    let decisionMs: number | null = null
+    let steps = 0
+    let generatedTokens = 0
+    beginChangeGroup()
+    try {
+        for (let index = 0; index < MAXIMUM_STEPS; index++) {
+            let result: Step
+            try {
+                result = await step(url, conversation)
+            } catch (error) {
+                reply = `(error: ${error instanceof Error ? error.message : String(error)})`
+                break
+            }
+            steps++
+            generatedTokens += result.generatedTokens ?? 0
+            const acts = result.calls.some(call => CHANGING_TOOLS.has(call.function.name))
+            if (decisionMs === null && (acts || result.calls.length === 0)) decisionMs = performance.now() - startedMs
+            conversation.push({ role: 'assistant', content: result.content || null, ...(result.calls.length ? { tool_calls: result.calls } : {}) })
+            reply = result.content.trim()
+            if (result.calls.length === 0) break
+            for (const call of result.calls) {
+                const { result: output, record } = await runTool(call)
+                calls.push(record)
+                conversation.push({ role: 'tool', tool_call_id: call.id, content: output })
+            }
+        }
+    } finally {
+        endChangeGroup()
+    }
+    return { reply, calls, decisionMs, totalMs: performance.now() - startedMs, steps, generatedTokens }
+}
+
+function percentile(values: number[], fraction: number): number | null {
+    if (values.length === 0) return null
+    const sorted = [...values].sort((first, second) => first - second)
+    return Math.round(sorted[Math.min(sorted.length - 1, Math.ceil(fraction * sorted.length) - 1)])
+}
+
+async function sha256(path: string): Promise<string> {
+    const hash = createHash('sha256')
+    for await (const chunk of createReadStream(path)) hash.update(chunk)
+    return hash.digest('hex')
+}
+
+/** A slightly dark, evenly lit test picture with nothing clipped, as the answer key's turn 1 expects. */
+function ensureFrame(): void {
+    if (existsSync(FRAME_PATH)) return
+    execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=1280x720', '-vf', 'eq=brightness=-0.22:contrast=0.55', '-frames:v', '1', FRAME_PATH])
+}
+
+function runningEngines(): string[] {
+    return execFileSync('ps', ['-Ao', 'pid=,args='])
+        .toString()
+        .split('\n')
+        .filter(line => (line.trim().split(/\s+/)[1] ?? '').split('/').at(-1) === 'llama-server')
+}
+
+async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>> {
+    if (runningEngines().length) throw new Error('another llama-server is still running, refusing to measure')
+    const modelPath = join(LLAMA_MODELS, model.repository.replace('/', '__'), model.file)
+    const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`))
+    const turns = scriptTurns()
+    const records: TurnRecord[] = []
+    cameraService.reset()
+    cameraService.useFrame(FRAME_PATH)
+    studioView.report({ ...STARTING_VIEW })
+    const conversation: ChatMessage[] = [{ role: 'system', content: AGENT_INSTRUCTIONS }]
+    const perfect = JSON.parse(readFileSync(PERFECT_PATH, 'utf8')) as Record<string, { camera: CameraSnapshot; view: StudioViewState }>
+    try {
+        for (const { turn, text } of turns) {
+            const expectation = ANSWER_KEY.find(entry => entry.turn === turn)
+            if (!expectation) throw new Error(`no answer key entry for turn ${turn}`)
+            // Each turn starts where a perfect run would be, so one mistake isn't counted again in later turns.
+            cameraService.restore(perfect[turn].camera)
+            studioView.report({ ...perfect[turn].view })
+            const before = { camera: structuredClone(cameraService.getState()), view: { ...studioView.getState()! } }
+            const eventCount = cameraService.events.length
+            const result = await runTurn(server.url, conversation, text)
+            const after = { camera: structuredClone(cameraService.getState()), view: { ...studioView.getState()! } }
+            const outcome: TurnOutcome = { before, after, events: cameraService.events.slice(eventCount), calls: result.calls, reply: result.reply }
+            const failures = expectation.check(outcome)
+            records.push({ turn, said: text, kind: expectation.kind, expected: expectation.expected, passed: failures.length === 0, failures, ...result })
+            console.log(`  ${model.id} turn ${turn}: ${failures.length ? `FAIL ${failures.join('; ')}` : 'pass'} (${Math.round(result.decisionMs ?? result.totalMs)} ms)`)
+        }
+    } finally {
+        await server.stop()
+    }
+    if (runningEngines().length) throw new Error('llama-server did not exit')
+    const decisions = records.map(record => record.decisionMs).filter((value): value is number => value !== null)
+    const calls = records.flatMap(record => record.calls)
+    const turnsPassed = records.filter(record => record.passed).length / records.length
+    const invalidCallShare = calls.length ? calls.filter(call => !call.valid).length / calls.length : 0
+    const decisionMedianMs = percentile(decisions, 0.5)
+    const decisionP90Ms = percentile(decisions, 0.9)
+    const byKind = (kind: string) => {
+        const ofKind = records.filter(record => record.kind === kind)
+        return { passed: ofKind.filter(record => record.passed).length, total: ofKind.length }
+    }
+    writeFileSync(join(RAW_DIRECTORY, `${model.id}.json`), JSON.stringify({ model: model.id, conversation }, null, 2))
+    writeFileSync(join(MODEL_DIRECTORY, `${model.id}.json`), `${JSON.stringify({ id: model.id, turns: records })}\n`)
+    return {
+        id: model.id,
+        ...toolScore({ turnsPassed, invalidCallShare, decisionMedianMs, decisionP90Ms }),
+        name: model.name,
+        maker: model.maker,
+        licence: model.licence,
+        source: `https://huggingface.co/${model.repository}`,
+        files: [{ name: model.file, bytes: statSync(modelPath).size, sha256: await sha256(modelPath) }],
+        sizeGigabytes: Number((statSync(modelPath).size / 1e9).toFixed(2)),
+        turnsPassed: Number(turnsPassed.toFixed(4)),
+        byKind: { requests: byKind('request'), questions: byKind('question'), cannotDo: byKind('cannot-do'), video: byKind('video') },
+        toolCalls: calls.length,
+        invalidToolCalls: calls.filter(call => !call.valid).length,
+        decisionMedianMs,
+        decisionP90Ms,
+        decisionMaxMs: percentile(decisions, 1),
+        generatedTokens: records.reduce((sum, record) => sum + record.generatedTokens, 0),
+        loadSeconds: Number((server.loadMs / 1000).toFixed(1)),
+        peakMemoryGigabytes: Number((server.peakFootprintBytes / 1e9).toFixed(2)),
+    }
+}
+
+function command(binary: string, ...argumentsGiven: string[]): string {
+    const result = spawnSync(binary, argumentsGiven)
+    return `${result.stdout ?? ''}${result.stderr ?? ''}`.trim()
+}
+
+async function runDetails(): Promise<Record<string, unknown>> {
+    return {
+        benchmark: 'toolbench',
+        version: RESULTS_VERSION,
+        date: new Date().toISOString(),
+        hardware: {
+            machine: command('sysctl', '-n', 'hw.model'),
+            chip: command('sysctl', '-n', 'machdep.cpu.brand_string'),
+            memoryGigabytes: Number(command('sysctl', '-n', 'hw.memsize')) / 2 ** 30,
+            cores: Number(command('sysctl', '-n', 'hw.ncpu')),
+            macOS: `${command('sw_vers', '-productVersion')} (${command('sw_vers', '-buildVersion')})`,
+        },
+        engines: { llamaServer: command(LLAMA_SERVER_BINARY, '--version').match(/version: [^\n]+/)?.[0] ?? 'unknown', harness: `bun ${process.versions.bun}` },
+        input: {
+            script: 'script/video-script.md',
+            scriptSha256: await sha256(SCRIPT_PATH),
+            turns: scriptTurns().length,
+            tools: { source: 'darkgrade/darkgrade apps/studio/src/main/tools/studio-tools.ts', commit: command('git', '-C', DARKGRADE, 'rev-parse', 'HEAD'), count: STUDIO_TOOLS.length },
+        },
+        method: {
+            settings: "Each model on llama-server with its defaults; the only arguments are the model file and a port. Requests carry no sampling or reasoning options, so models think if that's their default.",
+            input: "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
+            tools: "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
+            accuracy: 'Each turn is checked against the answer key: what changed on the camera and in Studio, which tools were called and in what order. Requests may make extra read-only calls; turns that are the video itself may make none.',
+            latency: "From sending a turn to the model finishing its first action, or its reply when it shouldn't act.",
+            score: 'A 0–100 score from fixed scales, so it doesn\'t change when other models are added: right action (55%: half the turns right scores 0, all of them 100), clean tool calls (15%: one call in five invalid scores 0, none 100), typical wait (20%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 30 s scores 0, 1 s scores 100), waits on a log scale.',
+            isolation: 'One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.',
+            runs: 'One pass per model.',
+        },
+    }
+}
+
+/** Plays the answer key's perfect calls once and records where the camera and view are before each turn. */
+async function recordPerfectRun(): Promise<void> {
+    mkdirSync(RAW_DIRECTORY, { recursive: true })
+    ensureFrame()
+    cameraService.reset()
+    cameraService.useFrame(FRAME_PATH)
+    studioView.report({ ...STARTING_VIEW })
+    const states: Record<number, { camera: CameraSnapshot; view: StudioViewState }> = {}
+    for (const { turn } of scriptTurns()) {
+        states[turn] = { camera: cameraService.snapshot(), view: { ...studioView.getState()! } }
+        beginChangeGroup()
+        for (const call of ANSWER_KEY.find(entry => entry.turn === turn)!.perfect) {
+            const { result } = await runTool({ id: 'perfect', type: 'function', function: { name: call.name, arguments: JSON.stringify(call.arguments) } })
+            if (result.startsWith('Error')) throw new Error(`perfect run, turn ${turn}, ${call.name}: ${result}`)
+        }
+        endChangeGroup()
+    }
+    writeFileSync(PERFECT_PATH, JSON.stringify(states))
+    console.log(`toolbench: recorded a perfect run of ${Object.keys(states).length} turns`)
+}
+
+async function main(): Promise<void> {
+    const argumentsGiven = process.argv.slice(2)
+    if (argumentsGiven.includes('--perfect')) return recordPerfectRun()
+    const listed = argumentsGiven.includes('--models') ? argumentsGiven[argumentsGiven.indexOf('--models') + 1].split(',') : null
+    const models = listed ? TEXT_MODELS.filter(model => listed.includes(model.id)) : TEXT_MODELS
+    mkdirSync(RAW_DIRECTORY, { recursive: true })
+    mkdirSync(MODEL_DIRECTORY, { recursive: true })
+    ensureFrame()
+    const details = await runDetails()
+    const previous = existsSync(RESULTS_PATH) ? ((JSON.parse(readFileSync(RESULTS_PATH, 'utf8')) as { models?: { id: string }[] }).models ?? []) : []
+    const rows = new Map(previous.map(row => [row.id, row as Record<string, unknown>]))
+    console.log(`toolbench: ${models.length} models × ${scriptTurns().length} turns`)
+    for (const model of models) {
+        console.log(`toolbench: ${model.id}`)
+        try {
+            rows.set(model.id, await benchmarkModel(model))
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            console.log(`  ${model.id} failed: ${message}`)
+            rows.set(model.id, { id: model.id, name: model.name, maker: model.maker, error: message })
+            if (runningEngines().length) throw new Error(`stopping: llama-server still running after ${model.id} failed`)
+        }
+        const ordered = [...rows.values()].sort((first, second) => Number(second.score ?? -1) - Number(first.score ?? -1))
+        writeFileSync(RESULTS_PATH, `${JSON.stringify({ ...details, models: ordered }, null, 2)}\n`)
+    }
+}
+
+await main()
