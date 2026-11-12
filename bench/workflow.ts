@@ -73,7 +73,7 @@ const keptPass = (input: PassInput) => {
 const rowOf = (id: string): Row | undefined => ((JSON.parse(readFileSync(RESULTS_PATH, 'utf8')) as { models: Row[] }).models ?? []).find(row => row.id === id)
 
 export async function toolbench() {
-    const { task, serve, start } = await workflows()
+    const { task, serve, start } = await workflows('toolbench')
 
     const perfect = task<{ force?: boolean }, { summary: string }>({
         name: 'perfect',
