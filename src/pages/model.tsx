@@ -29,7 +29,7 @@ export function ModelPage({ model }: { model: ModelSummary }) {
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <Stat boxed size="lg" label="Score" value={model.score ?? '–'} unit="/ 100" sub={`#${rank} of ${MODELS.length} models`} />
+                <Stat boxed size="lg" label="Score" value={model.score ?? '–'} unit="/ 100" sub={model.passScores && model.passScores.length > 1 ? `median of ${model.passScores.length} runs: ${model.passScores.map(score => score ?? '–').join(' · ')}` : `#${rank} of ${MODELS.length} models`} />
                 <Stat boxed size="lg" label="Turns right" value={percent(model.turnsPassed)} />
                 <Stat boxed size="lg" label="Typical wait" value={seconds(model.decisionMedianMs)} sub={`slow: ${seconds(model.decisionP90Ms)}`} />
                 <Stat boxed size="lg" label="Invalid tool calls" value={model.invalidToolCalls ?? '–'} sub={`of ${model.toolCalls ?? '–'}`} />

@@ -36,8 +36,13 @@ const DARKGRADE = process.env.DARKGRADE_PATH ?? resolve(ROOT, '..', 'darkgrade')
 const RESULTS_VERSION = 1
 /** Studio's assistant allows this many model calls per request. */
 const MAXIMUM_STEPS = 5
-/** Thinking off for every model: a voice app has to answer at once, and it's the same for all (see README). */
-export const THINKING_OFF = ['--reasoning', 'off']
+/**
+ * The only settings changed from llama-server's defaults, the same for every model (see README): thinking
+ * off, because a voice app has to answer at once; and a 64k context, which holds the longest conversation
+ * (about 43k tokens) without each model reserving memory for its full context window.
+ */
+export const SERVER_SETTINGS = ['--reasoning', 'off', '--ctx-size', '65536']
+const PASSES_DIRECTORY = join(RAW_DIRECTORY, 'passes')
 /**
  * Every model gets this long to decide: its first action, or its answer when it shouldn't act. Past it
  * the turn is cut off and counts as wrong. As in Darkgrade Studio, a tool runs as soon as the model
@@ -246,11 +251,17 @@ class StopRequested extends Error {}
 /** Exit code that tells launch.ts the run was stopped on purpose. */
 export const STOPPED_EXIT_CODE = 3
 
-async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>> {
+interface PassResult {
+    row: Record<string, unknown>
+    turns: TurnRecord[]
+}
+
+/** One pass of the script; small models run three passes and publish the median (see main). */
+async function benchmarkModel(model: TextModel, pass: number, passes: number): Promise<PassResult> {
     if (runningEngines().length) throw new Error('another llama-server is still running, refusing to measure')
     const modelPath = join(LLAMA_MODELS, model.repository.replace('/', '__'), model.file)
-    startModel(model.id, scriptTurns().length)
-    const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`), THINKING_OFF)
+    startModel(model.id, scriptTurns().length, passes > 1 ? `Pass ${pass} of ${passes}: loading the model` : undefined)
+    const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`), SERVER_SETTINGS)
     const turns = scriptTurns()
     const records: TurnRecord[] = []
     cameraService.reset()
@@ -275,7 +286,7 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
             const mistakes: Mistake[] = [...(result.timedOut ? [{ severity: 'serious' as const, reason: `took longer than ${TURN_LIMIT_MS / 1000} s to decide` }] : []), ...expectation.check(outcome)]
             const failures = mistakes.map(mistake => `${mistake.severity}: ${mistake.reason}`)
             records.push({ turn, said: text, kind: expectation.kind, expected: expectation.expected, passed: mistakes.length === 0, failures, credit: turnCredit(mistakes), ...result })
-            stepDone(model.id, records.length, turns.length, `Turn ${turn}: "${text.length > 60 ? `${text.slice(0, 57)}…` : text}"`, {
+            stepDone(model.id, records.length, turns.length, `${passes > 1 ? `Pass ${pass} of ${passes}, t` : 'T'}urn ${turn}: "${text.length > 60 ? `${text.slice(0, 57)}…` : text}"`, {
                 passed: mistakes.length === 0 ? true : mistakes.some(mistake => mistake.severity === 'serious') ? false : undefined,
                 note: failures.length ? failures.join('; ') : `${((result.decisionMs ?? result.totalMs) / 1000).toFixed(1)} s`,
             })
@@ -293,14 +304,12 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
     const decisionMedianMs = percentile(decisions, 0.5)
     const decisionP90Ms = percentile(decisions, 0.9)
     const scored = toolScore({ turnsPassed, seriousShare, invalidCallShare, decisionMedianMs, decisionP90Ms })
-    finishModel(model.id, { score: scored.score ?? '–', 'turns right': `${Math.round(turnsPassed * 100)}%`, 'serious mistakes': records.filter(record => record.credit === 0).length, 'typical wait': `${((decisionMedianMs ?? 0) / 1000).toFixed(1)} s` })
     const byKind = (kind: string) => {
         const ofKind = records.filter(record => record.kind === kind)
         return { passed: ofKind.filter(record => record.passed).length, total: ofKind.length }
     }
-    writeFileSync(join(RAW_DIRECTORY, `${model.id}.json`), JSON.stringify({ model: model.id, conversation }, null, 2))
-    writeFileSync(join(MODEL_DIRECTORY, `${model.id}.json`), `${JSON.stringify({ id: model.id, turns: records })}\n`)
-    return {
+    writeFileSync(join(RAW_DIRECTORY, `${model.id}.${pass}.json`), JSON.stringify({ model: model.id, pass, conversation }, null, 2))
+    const row = {
         id: model.id,
         ...scored,
         name: model.name,
@@ -323,6 +332,27 @@ async function benchmarkModel(model: TextModel): Promise<Record<string, unknown>
         loadSeconds: Number((server.loadMs / 1000).toFixed(1)),
         peakMemoryGigabytes: Number((server.peakFootprintBytes / 1e9).toFixed(2)),
     }
+    return { row, turns: records }
+}
+
+const passPath = (id: string, pass: number): string => join(PASSES_DIRECTORY, `${id}.${pass}.json`)
+
+/** The published row: the pass with the median score, so its turn-by-turn page matches its numbers, plus every pass's score. */
+function publishMedian(model: TextModel, passes: number, rows: Map<string, Record<string, unknown>>): void {
+    const results = Array.from({ length: passes }, (_, index) => JSON.parse(readFileSync(passPath(model.id, index + 1), 'utf8')) as PassResult)
+    const byScore = [...results].sort((first, second) => Number(first.row.score ?? -1) - Number(second.row.score ?? -1))
+    const median = byScore[Math.floor(byScore.length / 2)]
+    const passScores = results.map(result => result.row.score as number | null)
+    rows.set(model.id, { ...median.row, passScores })
+    writeFileSync(join(MODEL_DIRECTORY, `${model.id}.json`), `${JSON.stringify({ id: model.id, turns: median.turns })}\n`)
+    const row = median.row as { score?: number | null; turnsPassed: number; seriousMistakes: number; decisionMedianMs: number | null }
+    finishModel(model.id, {
+        score: row.score ?? '–',
+        ...(passes > 1 ? { passes: passScores.map(score => score ?? '–').join(' · ') } : {}),
+        'turns right': `${Math.round(row.turnsPassed * 100)}%`,
+        'serious mistakes': row.seriousMistakes,
+        'typical wait': `${((row.decisionMedianMs ?? 0) / 1000).toFixed(1)} s`,
+    })
 }
 
 function command(binary: string, ...argumentsGiven: string[]): string {
@@ -351,7 +381,7 @@ async function runDetails(): Promise<Record<string, unknown>> {
         },
         dropped: DROPPED_MODELS,
         method: {
-            settings: "Each model on llama-server with its defaults, except thinking: every model runs with thinking off (`--reasoning off`), because a voice app has to act at once and it's the same for all. The only other arguments are the model file and a port; requests carry no sampling options.",
+            settings: "Each model on llama-server with its defaults except two settings, the same for all: thinking off (`--reasoning off`), because a voice app has to act at once; and a 64k context (`--ctx-size 65536`), which holds the longest conversation (about 43k tokens) without a model reserving memory for its whole context window, so memory used reflects the model. The only other arguments are the model file and a port; requests carry no sampling options.",
             input: "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
             tools: "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
             accuracy: "Each turn is checked against the answer key by outcome: where the camera and Studio end up, not which tools were used. Lookups never count against a model and an answer's wording isn't graded. Mistakes are serious (ruins a take or your work: recording started or stopped at the wrong time, an unasked photo or download, the wrong file, the picture changed mid-take, a mode change not made, a false claim) or minor (a small adjustment missed or off, a harmless extra). A turn counts 1 when right, ½ with only minor mistakes, 0 with any serious one.",
@@ -359,7 +389,7 @@ async function runDetails(): Promise<Record<string, unknown>> {
             timeLimit: `${TURN_LIMIT_MS / 1000} s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a ${TURN_LIMIT_MS / 1000} s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.`,
             score: 'A 0–100 score from fixed scales, so it doesn\'t change when other models are added: right outcome (45%: half the turns\' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.',
             isolation: 'One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.',
-            runs: 'One pass per model.',
+            runs: 'Small models run the script three times, each in a fresh process, and publish the run with the median score; one run can swing by 10–20 points for them, because one early choice carries through the conversation. Mixture-of-experts models run once.',
         },
     }
 }
@@ -397,10 +427,15 @@ async function main(): Promise<void> {
     const previous = existsSync(RESULTS_PATH) ? ((JSON.parse(readFileSync(RESULTS_PATH, 'utf8')) as { models?: { id: string }[] }).models ?? []) : []
     const rows = new Map(previous.map(row => [row.id, row as Record<string, unknown>]))
     console.log(`toolbench: ${models.length} models × ${scriptTurns().length} turns`)
+    const pass = argumentsGiven.includes('--pass') ? Number(argumentsGiven[argumentsGiven.indexOf('--pass') + 1]) : 1
+    const passes = argumentsGiven.includes('--passes') ? Number(argumentsGiven[argumentsGiven.indexOf('--passes') + 1]) : 1
+    mkdirSync(PASSES_DIRECTORY, { recursive: true })
     for (const model of models) {
-        console.log(`toolbench: ${model.id}`)
+        console.log(`toolbench: ${model.id}${passes > 1 ? ` pass ${pass} of ${passes}` : ''}`)
         try {
-            rows.set(model.id, await benchmarkModel(model))
+            writeFileSync(passPath(model.id, pass), JSON.stringify({ ...(await benchmarkModel(model, pass, passes)), scriptSha256: details.input && (details.input as { scriptSha256: string }).scriptSha256 }))
+            if (pass < passes) continue
+            publishMedian(model, passes, rows)
         } catch (error) {
             if (error instanceof StopRequested) {
                 console.log(`  ${model.id} stopped`)

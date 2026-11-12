@@ -7,13 +7,14 @@
  *   bun run bench [-- --models id,id] [-- --resume]
  *   bun run bench:stop      stop after the current turn (or the Stop button on /progress)
  *
- * --resume skips models already in results/toolbench.json from a run of the same script.
+ * Small models run three passes and publish the median; mixture-of-experts models run one.
+ * --resume skips models already in results/toolbench.json, and passes already run, from a run of the same script.
  */
 import { LLAMA_MODELS, TEXT_MODELS } from '@bench/models'
 import { finishRun, startRun, stopRequested } from '@bench/progress'
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
@@ -74,9 +75,20 @@ function alreadyDone(): Map<string, Record<string, string | number>> {
     if (results.input?.scriptSha256 !== script) return new Map()
     return new Map(
         (results.models ?? [])
-            .filter(model => !model.error && model.score !== undefined)
+            .filter(model => !model.error && model.score !== undefined && ((model as { passScores?: unknown[] }).passScores?.length ?? 1) >= passesFor(TEXT_MODELS.find(candidate => candidate.id === model.id) ?? TEXT_MODELS[0]))
             .map(model => [model.id, { score: model.score ?? '–', 'turns right': `${Math.round((model.turnsPassed ?? 0) * 100)}%`, 'serious mistakes': model.seriousMistakes ?? 0, 'typical wait': `${((model.decisionMedianMs ?? 0) / 1000).toFixed(1)} s` }])
     )
+}
+
+/** Small models' scores swing between runs, so they run three times; mixture-of-experts models once. */
+const passesFor = (model: (typeof TEXT_MODELS)[number]): number => (model.modelClass === 'small' ? 3 : 1)
+const passesDirectory = join(root, 'results', 'raw', 'passes')
+const resuming = process.argv.includes('--resume')
+if (!resuming) rmSync(passesDirectory, { recursive: true, force: true })
+const script = createHash('sha256').update(readFileSync(join(root, 'script', 'video-script.md'))).digest('hex')
+const passDone = (id: string, pass: number): boolean => {
+    const path = join(passesDirectory, `${id}.${pass}.json`)
+    return resuming && existsSync(path) && (JSON.parse(readFileSync(path, 'utf8')) as { scriptSha256?: string }).scriptSha256 === script
 }
 
 const done = alreadyDone()
@@ -87,7 +99,12 @@ process.on('SIGINT', () => {
 })
 for (const model of models.filter(candidate => !done.has(candidate.id))) {
     if (stopRequested()) break
-    const status = run('--models', model.id)
+    let status = 0
+    for (let pass = 1; pass <= passesFor(model) && status === 0; pass++) {
+        if (pass < passesFor(model) && passDone(model.id, pass)) continue
+        if (stopRequested()) status = 3
+        else status = run('--models', model.id, '--pass', String(pass), '--passes', String(passesFor(model)))
+    }
     if (status === 3) break
     if (status !== 0) {
         finishRun('stopped')

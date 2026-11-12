@@ -32,6 +32,8 @@ export interface ModelSummary {
     /** 0–100, best 100 (see bench/tool-score.ts). */
     score?: number | null
     reasons?: Reason[]
+    /** Every run's score, in run order; the published numbers are from the median run. */
+    passScores?: (number | null)[]
     strengths?: string[]
     weaknesses?: string[]
     name: string
@@ -125,7 +127,7 @@ export const seconds = (milliseconds: number | null | undefined): string => (mil
 
 /** "One script, 33 turns, English only." */
 export function sampleSentence(): string {
-    return `English only for now: one script of ${RUN.input?.turns ?? 33} turns, each model run once. With one script, treat scores within a few points of each other as ties.`
+    return `English only for now: one script of ${RUN.input?.turns ?? 33} turns, small models run three times with the median published, the others once. Treat scores within a few points of each other as ties.`
 }
 
 /** Every page the site has, with what its title, description and preview card say. */

@@ -17,7 +17,11 @@ wrong time, an unasked photo or download, the picture changed mid-take) are seri
 English only for now.
 
 - Every model runs locally with llama.cpp's `llama-server` and its default settings, one at a time, except
-  that thinking is off for every model (`--reasoning off`): a voice app has to act at once.
+  that thinking is off for every model (`--reasoning off`), because a voice app has to act at once, and every
+  model gets a 64k context (`--ctx-size 65536`), which holds the longest conversation without a model
+  reserving memory for its whole context window.
+- Small models run the script three times and publish the median run, because one run can swing by 10–20
+  points; mixture-of-experts models run once.
 - Each turn starts from where a perfect run would be, so one mistake isn't counted twice.
 - The 0–100 score weighs the right outcome most (45%: a turn counts 1 when right, ½ with only minor
   mistakes, 0 with a serious one), then serious mistakes (15%), clean tool calls (5%) and how long it
