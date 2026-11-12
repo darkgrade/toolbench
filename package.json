@@ -6,13 +6,12 @@
         "node": ">=24"
     },
     "scripts": {
-        "bench": "bun bench/launch.ts",
-        "typecheck:bench": "bun bench/launch.ts --typecheck",
+        "bench": "bun bench/start.ts",
+        "typecheck:bench": "bun bench/studio-config.ts",
         "dev": "vite",
-        "build": "tsc --noEmit && vite build && vite build --ssr src/server.tsx --outDir .server && bun scripts/prerender.ts",
+        "build": "tsc --noEmit -p tsconfig.site.json && vite build && vite build --ssr src/server.tsx --outDir .server && bun scripts/prerender.ts",
         "typecheck": "tsc --noEmit",
-        "bench:stop": "bun bench/progress.ts --stop",
-        "bench:status": "bun bench/progress.ts"
+        "worker": "bun bench/worker.ts"
     },
     "dependencies": {
         "@kevinschaich/components": "^0.8.0",
@@ -33,5 +32,8 @@
         "tailwindcss": "^4.3.5",
         "typescript": "^7.0.2",
         "vite": "^8.3.8"
+    },
+    "optionalDependencies": {
+        "outpost-workflows": "file:../outpost/workflows"
     }
 }

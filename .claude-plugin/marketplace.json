@@ -1,0 +1,11 @@
+{
+  "name": "toolbench",
+  "owner": { "name": "Darkgrade" },
+  "plugins": [
+    {
+      "name": "toolbench",
+      "source": "./",
+      "description": "Toolbench in Outpost: its results, and its workflow's runs on this Mac's GPU."
+    }
+  ]
+}

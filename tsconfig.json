@@ -17,5 +17,5 @@
             "@results/*": ["./results/*"]
         }
     },
-    "include": ["src", "vite.config.ts"]
+    "include": ["src", "vite.config.ts", "bench/workflow.ts", "bench/worker.ts", "bench/start.ts", "bench/studio-config.ts"]
 }

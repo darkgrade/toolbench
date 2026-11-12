@@ -34,7 +34,8 @@ checksum and the darkgrade commit whose tools were tested.
 
 ```sh
 bun install
-bun run bench    # needs a darkgrade checkout next to this one, or DARKGRADE_PATH
+bun run worker   # serves the benchmark's tasks (leave it running); needs a darkgrade checkout next to this one, or DARKGRADE_PATH
+bun run bench    # starts a run: every model; `-- --models a,b` for some, `--force` to redo all
 bun run dev      # the results site
 ```
 

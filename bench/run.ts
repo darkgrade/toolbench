@@ -1,6 +1,8 @@
 /**
- * Runs every text model through the script and writes results/toolbench.json. Start it with
- * `bun run bench` (bench/launch.ts), which points Studio's imports at this repo's simulated camera.
+ * One pass of one text model through the script (bench/workflow.ts runs each in a fresh process, with
+ * bench/studio-config.ts pointing Studio's imports at this repo's simulated camera); the last pass
+ * publishes the model's median into results/toolbench.json. `--median` publishes it from passes already
+ * run, and `--perfect` records the perfect run every pass starts its turns from.
  *
  * Each model runs alone on llama-server with its defaults. The script's turns are sent one at a time,
  * word for word, as one conversation, with Studio's system prompt and Studio's real tools (loaded from
@@ -428,6 +430,8 @@ async function recordPerfectRun(): Promise<void> {
 async function main(): Promise<void> {
     const argumentsGiven = process.argv.slice(2)
     if (argumentsGiven.includes('--perfect')) return recordPerfectRun()
+    // Every pass already run (kept from an earlier run): only the median is published again.
+    const medianOnly = argumentsGiven.includes('--median')
     const listed = argumentsGiven.includes('--models') ? argumentsGiven[argumentsGiven.indexOf('--models') + 1].split(',') : null
     const models = listed ? TEXT_MODELS.filter(model => listed.includes(model.id)) : TEXT_MODELS
     mkdirSync(RAW_DIRECTORY, { recursive: true })
@@ -443,7 +447,7 @@ async function main(): Promise<void> {
     for (const model of models) {
         console.log(`toolbench: ${model.id}${passes > 1 ? ` pass ${pass} of ${passes}` : ''}`)
         try {
-            writeFileSync(passPath(model.id, pass), JSON.stringify({ ...(await benchmarkModel(model, pass, passes)), scriptSha256: details.input && (details.input as { scriptSha256: string }).scriptSha256 }))
+            if (!medianOnly) writeFileSync(passPath(model.id, pass), JSON.stringify({ ...(await benchmarkModel(model, pass, passes)), scriptSha256: details.input && (details.input as { scriptSha256: string }).scriptSha256 }))
             if (pass < passes) continue
             publishMedian(model, passes, rows)
         } catch (error) {
@@ -463,4 +467,4 @@ async function main(): Promise<void> {
     }
 }
 
-await main()
+if (import.meta.main) await main()

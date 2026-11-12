@@ -9,12 +9,12 @@ The site in `src/` publishes the results.
 
 ## How the tools are loaded
 
-Studio's tools live in the darkgrade repo (`apps/studio/src/main/tools/studio-tools.ts`). `bun run bench`
-(`bench/launch.ts`) writes a TypeScript config that points their two outside imports, Studio's camera
+Studio's tools live in the darkgrade repo (`apps/studio/src/main/tools/studio-tools.ts`). `bench/studio-config.ts`
+writes a TypeScript config that points their two outside imports, Studio's camera
 service and Electron, at `bench/simulated-camera.ts` and `bench/electron-stand-in.ts`, and everything
 else at the darkgrade checkout (`DARKGRADE_PATH`, by default `../darkgrade`). The results record that
 checkout's commit. Nothing in darkgrade is changed. When Studio's tools move or gain an import from
-Studio's internals, update `launch.ts`. Once the tools are a shared library (with Link doing the camera
+Studio's internals, update `studio-config.ts`. Once the tools are a shared library (with Link doing the camera
 abstraction), import them from there instead.
 
 Each turn starts where a perfect run would be (`bench/run.ts --perfect` plays the answer key's
@@ -30,7 +30,8 @@ changes, change the others.
 
 | Path | What it holds |
 | --- | --- |
-| `bench/` | The harness, in TypeScript, run with bun. `run.ts` runs the benchmark, `setup.ts` installs engines and models, `models.ts` lists every model under test. |
+| `bench/` | The harness, in TypeScript, run with bun. `workflow.ts` is the benchmark as a workflow (Outpost's workflows: one task per model, smaller tasks under it, then `publish`), `run.ts` measures, `setup.ts` installs engines and models, `models.ts` lists every model under test. |
+| `.claude-plugin/`, `outpost/` | The Outpost app: installed from this repository, it shows the results and the workflow's runs live (Run, Run without cache, Cancel, Retry), and keeps a worker on the Mac running this repository's latest commit. Never part of the public site. |
 | `bench/runners/` | Small non-TypeScript shims, only for models that ship nothing else (see Approved exceptions). |
 | `script/` | The fixed input every participant or run uses (here, the reading script). |
 | `recordings/` | Inputs gathered from people: `speaker-NN.<ext>` plus `speakers.json` (anonymous metadata). Audio is git-ignored until its speaker agrees to publish it. |
@@ -41,7 +42,9 @@ changes, change the others.
 **Commands** (the same names in every bench)
 
 - `bun run setup`: download engines and models into the cache (`~/.cache/darkgrade-bench/<bench>/`, or `BENCH_CACHE`). Skips anything already there.
-- `bun run bench`: run every model. `bun run bench -- --models a,b` runs some; their rows in the results file are replaced and the rest kept.
+- `bun run worker`: serve the workflow's tasks on this Mac. In Outpost, `ops/worker.sh <bench>` keeps it running from Outpost's checkout; on its own it starts a development engine (nothing is published).
+- `bun run bench`: start a run on the worker (every model; `-- --models a,b` for some, whose rows are replaced and the rest kept; `--force` redoes what earlier runs kept). In Outpost, start runs from the app instead: a run there ends by committing the results files to `main` through Outpost (`publish`), and Vercel deploys them.
+- Results a task produced are kept (`results/raw/cache/`, git-ignored) under a key of everything that affects them (model files, input hashes, settings, harness code), so a run redoes only what changed.
 - `bun run dev` / `bun run build`: the results site.
 
 **Measuring**
