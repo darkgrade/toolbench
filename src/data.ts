@@ -12,6 +12,8 @@ export const BENCH = {
     /** Where the site is served; also Vite's base. */
     path: '/toolbench/',
     origin: 'https://darkgrade.com',
+    /** What it is, in search terms: names like Toolbench are shared with academic benchmarks. */
+    subject: 'Local LLM camera-control benchmark',
 }
 
 /** The overview's tabs; each after the first is its own page at BENCH.path + id. */
@@ -150,7 +152,7 @@ export function routes(): Route[] {
     const best = MODELS[0]
     const overview: Route = {
         path: '',
-        title: `${BENCH.name} | Darkgrade`,
+        title: `${BENCH.name} by Darkgrade: ${BENCH.subject}`,
         description: BENCH.tagline,
         card: { eyebrow: 'Toolbench', heading: BENCH.tagline, stats: best ? [{ label: 'Top model', value: best.name }, { label: 'Score', value: String(best.score ?? '–') }] : [] },
     }

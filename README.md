@@ -1,10 +1,10 @@
-[![Toolbench by kevinschaich](https://kevinschaich.com/og/toolbench.png)](https://kevinschaich.com/project/toolbench/)
+[![Toolbench by Darkgrade](https://darkgrade.com/toolbench/og/index.png)](https://darkgrade.com/toolbench/)
 
 # Toolbench
 
 Which local AI model gets your camera commands right?
 
-**[Try it →](https://darkgrade.com/toolbench/)**
+**[See the results →](https://darkgrade.com/toolbench/)**
 
 ## How it works
 
