@@ -187,10 +187,24 @@ export function routes(): Route[] {
             },
         })
     )
+    // Each view gets a card of its own: spreading the overview gave every one of them the bench's
+    // tagline and the same two stats, so /watch and /turns shared a card that named neither.
     const tabs = TABS.slice(1).map(
-        (tab): Route => ({ ...overview, path: `${tab.id}/`, title: `${TAB_PAGES[tab.id].title} | ${BENCH.name} by Darkgrade`, description: TAB_PAGES[tab.id].description })
+        (tab): Route => ({
+            ...overview,
+            path: `${tab.id}/`,
+            title: `${TAB_PAGES[tab.id].title} | ${BENCH.name} by Darkgrade`,
+            description: TAB_PAGES[tab.id].description,
+            card: { eyebrow: 'Toolbench', heading: TAB_PAGES[tab.id].title, stats: [] },
+        })
     )
     // The script had its own tab before it joined the method; its address still works.
-    const script: Route = { ...overview, path: 'script/', title: `The script | ${BENCH.name} by Darkgrade`, description: 'The script every model hears, turn by turn, with the take markers.' }
+    const script: Route = {
+        ...overview,
+        path: 'script/',
+        title: `The script | ${BENCH.name} by Darkgrade`,
+        description: 'The script every model hears, turn by turn, with the take markers.',
+        card: { eyebrow: 'Toolbench', heading: 'The script', stats: [] },
+    }
     return [overview, ...tabs, script, ...models]
 }
