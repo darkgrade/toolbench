@@ -4,6 +4,11 @@
 @import "@kevinschaich/components/typeset.css";
 @source "../node_modules/@kevinschaich/components/dist";
 
+/* The site is dark only: scrollbars and form controls follow. */
+html {
+    color-scheme: dark;
+}
+
 /* Labels and marks over a story's points arrive after the points have settled. */
 @keyframes ks-fade {
     from {

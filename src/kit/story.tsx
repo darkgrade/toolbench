@@ -181,8 +181,8 @@ export function Story({ count, palette, steps, tip, onSelect, children }: StoryP
                     {steps.map((item, index) => (
                         <section key={item.id} data-step={index} className={`flex px-4 sm:px-8 ${wide ? 'items-center' : 'items-end pb-[5vh]'}`} style={{ minHeight: viewHeight * 1.1 }}>
                             <div
-                                className={`pointer-events-auto w-full transition-[opacity,transform] duration-500 ${index === active ? 'opacity-100' : 'translate-y-4 opacity-25'} ${wide ? '' : 'max-h-[46vh] overflow-y-auto rounded-xl'}`}
-                                style={wide ? { maxWidth: CAPTION_WIDTH } : undefined}
+                                className={`pointer-events-auto w-full transition-[opacity,transform] duration-500 ${index === active ? 'opacity-100' : 'translate-y-4 opacity-25'} ${wide ? '' : 'overflow-y-auto rounded-xl'}`}
+                                style={wide ? { maxWidth: CAPTION_WIDTH } : { maxHeight: viewHeight * 0.46 }}
                             >
                                 <Card className={GLASS}>
                                     <CardContent className="space-y-3">

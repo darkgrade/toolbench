@@ -10,11 +10,20 @@ export interface ViewProps {
     onOpen: (tab: string, query?: string) => void
 }
 
-const view = (load: () => Promise<{ default: ComponentType<ViewProps> }>) => lazy(load)
-const WatchView = view(() => import('@site/views/watch'))
-const TurnsView = view(() => import('@site/views/turns'))
-const FieldView = view(() => import('@site/views/field'))
-const CompareView = view(() => import('@site/views/compare'))
+/** The views that load on first use, so the story never waits on their code. */
+const LOADERS = {
+    watch: () => import('@site/views/watch'),
+    turns: () => import('@site/views/turns'),
+    field: () => import('@site/views/field'),
+    compare: () => import('@site/views/compare'),
+}
+const WatchView = lazy<ComponentType<ViewProps>>(LOADERS.watch)
+const TurnsView = lazy<ComponentType<ViewProps>>(LOADERS.turns)
+const FieldView = lazy<ComponentType<ViewProps>>(LOADERS.field)
+const CompareView = lazy<ComponentType<ViewProps>>(LOADERS.compare)
+
+/** Loads every view's code: the server render waits on this so each view's page is prerendered whole. */
+export const loadViews = (): Promise<unknown> => Promise.all(Object.values(LOADERS).map(load => load()))
 
 /** The overview: the story and the other views, each at its own path under BENCH.path. */
 export function Overview({ path }: { path: string }) {
