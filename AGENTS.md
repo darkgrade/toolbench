@@ -31,13 +31,13 @@ changes, change the others.
 | Path | What it holds |
 | --- | --- |
 | `bench/` | The harness, in TypeScript, run with bun. `workflow.ts` is the benchmark as a workflow (Outpost's workflows: one task per model, smaller tasks under it, then `publish`), `run.ts` measures, `setup.ts` installs engines and models, `models.ts` lists every model under test. |
-| `.claude-plugin/`, `outpost/` | The Outpost app: installed from this repository, it shows the results and the workflow's runs live (Run, Run without cache, Cancel, Retry), and keeps a worker on the Mac running this repository's latest commit. Never part of the public site. |
+| `.claude-plugin/`, `outpost/` | The Outpost app: installed from this repository, it shows the workflow's runs live (Run, Run without cache, Cancel, Retry), and keeps a worker on the Mac running this repository's latest commit. It doesn't show the results: the site does. Never part of the public site. |
 | `bench/runners/` | Small non-TypeScript shims, only for models that ship nothing else (see Approved exceptions). |
 | `script/` | The fixed input every participant or run uses (here, the reading script). |
 | `recordings/` | Inputs gathered from people: `speaker-NN.<ext>` plus `speakers.json` (anonymous metadata). Audio is git-ignored until its speaker agrees to publish it. |
 | `results/<bench>.json` | The published results: committed, anonymized, one file for the whole run. |
 | `results/raw/` | Full model output and engine logs. Git-ignored and overwritten on every run. |
-| `src/` | The static results site (Vite + React + `@kevinschaich/components`), which imports `results/<bench>.json` at build time. No server code. |
+| `src/` | The static results site (Vite + React + `@kevinschaich/components`), built from `results/` (see Site). No server code. |
 
 **Commands** (the same names in every bench)
 
@@ -67,12 +67,32 @@ results.
 
 **Site**
 
-The same pages in every bench: an overview with tabs for **Results** (the `Leaderboard`, sorted by
-score), **Accuracy vs. speed** (the `TradeoffChart`), **How we test** (the method from the results file,
-the hardware, and how to repeat it) and **The script** (or **Take part** where people contribute input); filters as one-of-a-few `Tabs` per category
-(size, mode, licence …); and a static page per entry at `/<bench>/<id>/` with its score breakdown and
-detail. Every page is prerendered with its own title, description, canonical URL and OG card.
-`Leaderboard` and `TradeoffChart` come from `@kevinschaich/components`; when cambench is the third bench, move the rest (rubric, page shells, prerender) into a shared package.
+Every bench's overview is a full-window set of views over the same published results, each view at its own
+path so it can be linked and prerendered. The first is always the **Story**: every measurement as a point of
+light (`src/kit/points.ts`, WebGL) that rearranges as captions scroll past (`src/kit/story.tsx`), ending in
+the ranking with a link to every entry's page. Here the points are one model on one turn, and the other
+views are **Watch** (the shoot replayed turn by turn on a drawn viewfinder, each model waiting as long as it
+really took), **Turns** (every model against every turn, and the different things models did with a turn),
+**Field** (accuracy against wait, download or memory; its path is still `tradeoff/`), **Compare** (two
+models side by side), **Table** (the `Leaderboard` with filters as one-of-a-few `Tabs`) and **Method**
+(how we test, the hardware, how to repeat it, and the script; `script/` still opens it).
+
+- `src/kit/` (points, story, shell, theme) is the same in all three benches: change one, change the others.
+  Move it, with the rubric and prerender, into a shared package when that is worth a release.
+- `scripts/build-data.ts` runs before `vite` and `vite build`. It writes `public/data/shoot.json` (every
+  model's every turn, which the views fetch) and `src/facts.json` (the tallies the story's captions quote,
+  bundled so they are prerendered). Neither is committed. Every number in a caption comes from there.
+- `results/perfect.json` is where the camera and Studio's view are before each turn, from the perfect run
+  (the workflow's `perfect` task rewrites it from the recorded run and `publish` commits it; that code is in
+  `bench/workflow.ts`, which the cache key leaves out, so it never forces models to run again). Watch starts each turn
+  from it and applies the model's calls (`src/views/watch/look.ts`): absolute settings as set, relative ones
+  (brighter, warmer, zoom) as the change asked for.
+- A static page per entry at `/<bench>/<id>/` (`src/entry.tsx`, `src/pages/model.tsx`), in the same frame as
+  the overview: its score, its whole shoot turn by turn on the viewfinder, where it stands in the field and
+  every turn written out, all in the prerendered page. It loads only its own detail file
+  (`src/details.ts`), separately from the overview's code. These are the pages search engines have indexed:
+  never change their address, title, description or canonical URL, and keep their substance in the HTML.
+- Every page is prerendered with its own title, description, canonical URL and OG card.
 
 **Results file**
 

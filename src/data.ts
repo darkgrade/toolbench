@@ -1,28 +1,41 @@
 /**
- * The published results, bundled at build time: results/toolbench.json for the overview and
- * results/models/<id>.json for each model's page. Every page is prerendered from these, so the site
- * needs no server and search engines see the numbers.
+ * The published results' summary, bundled at build time: results/toolbench.json. Every page is
+ * prerendered from it, so the site needs no server and search engines see the numbers. Each model's
+ * turns are in src/details.ts (its own page) and src/shoot.ts (the overview's views).
  */
 import results from '@results/toolbench.json'
 
 export const BENCH = {
     name: 'Toolbench',
-    tagline: 'Which local AI model gets your camera commands right?',
+    tagline: 'Which local AI models nail tool calls, and how fast?',
     repository: 'darkgrade/toolbench',
     /** Where the site is served; also Vite's base. */
     path: '/toolbench/',
     origin: 'https://darkgrade.com',
     /** What it is, in search terms: names like Toolbench are shared with academic benchmarks. */
-    subject: 'Local LLM camera-control benchmark',
+    subject: 'Local LLM tool-calling benchmark',
 }
 
-/** The overview's tabs; each after the first is its own page at BENCH.path + id. */
+/** The overview's views; each after the first is its own page at BENCH.path + id. */
 export const TABS = [
-    { id: 'results', label: 'Results' },
-    { id: 'tradeoff', label: 'Accuracy vs. speed' },
-    { id: 'method', label: 'How we test' },
-    { id: 'script', label: 'The script' },
+    { id: 'story', label: 'Story' },
+    { id: 'watch', label: 'Watch' },
+    { id: 'turns', label: 'Turns' },
+    { id: 'tradeoff', label: 'Field' },
+    { id: 'compare', label: 'Compare' },
+    { id: 'results', label: 'Table' },
+    { id: 'method', label: 'Method' },
 ]
+
+/** What each view is, for its page title and description. */
+const TAB_PAGES: Record<string, { title: string; description: string }> = {
+    watch: { title: 'Watch a model run the shoot', description: 'Replay the whole shoot turn by turn: what was said, what each model did to the camera, and how long it made you wait.' },
+    turns: { title: 'Every turn, every model', description: 'Which lines of the script local models get right, where they slip, and what each one did instead.' },
+    tradeoff: { title: 'Accuracy vs. speed', description: 'Every model by how often it does the right thing and how long it makes you wait.' },
+    compare: { title: 'Compare two models', description: 'Two local models side by side: their scores, their waits, and every turn they handled differently.' },
+    results: { title: 'Results', description: 'Every model ranked by score, with turns right, waits, download size and licence.' },
+    method: { title: 'How we test', description: 'The script, the tools, the checks and the hardware behind every score, and how to repeat the run.' },
+}
 
 export interface Reason {
     area: string
@@ -86,6 +99,7 @@ export interface TurnDetail {
     reply: string
     calls: { name: string; arguments: Record<string, unknown>; valid: boolean }[]
     decisionMs: number | null
+    timedOut?: boolean
 }
 
 export interface ModelDetail {
@@ -96,9 +110,10 @@ export interface ModelDetail {
 export const RUN = results as RunDetails
 export const MODELS = RUN.models.filter(model => !model.error && model.score !== undefined)
 
-const details = import.meta.glob<ModelDetail>('../results/models/*.json', { eager: true, import: 'default' })
-export function modelDetail(id: string): ModelDetail | undefined {
-    return details[`../results/models/${id}.json`]
+/** The model a path names, if it is a model's own page. */
+export function modelFromPath(path: string): ModelSummary | undefined {
+    const id = path.replace(BENCH.path, '').replace(/\/$/, '')
+    return id ? MODELS.find(candidate => candidate.id === id) : undefined
 }
 
 /** One row of filters per category, each a one-of-a-few choice. */
@@ -173,7 +188,9 @@ export function routes(): Route[] {
         })
     )
     const tabs = TABS.slice(1).map(
-        (tab): Route => ({ ...overview, path: `${tab.id}/`, title: `${tab.label} | ${BENCH.name} by Darkgrade` })
+        (tab): Route => ({ ...overview, path: `${tab.id}/`, title: `${TAB_PAGES[tab.id].title} | ${BENCH.name} by Darkgrade`, description: TAB_PAGES[tab.id].description })
     )
-    return [overview, ...tabs, ...models]
+    // The script had its own tab before it joined the method; its address still works.
+    const script: Route = { ...overview, path: 'script/', title: `The script | ${BENCH.name} by Darkgrade`, description: 'The script every model hears, turn by turn, with the take markers.' }
+    return [overview, ...tabs, script, ...models]
 }

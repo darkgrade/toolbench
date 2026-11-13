@@ -1,0 +1,649 @@
+[
+ {
+  "turn": 1,
+  "mode": "Movie Manual",
+  "iso": "800",
+  "shutterSpeed": "1/50",
+  "aperture": "F4.0",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "histogram",
+  "zebras": false,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 2,
+  "mode": "Movie Manual",
+  "iso": "800",
+  "shutterSpeed": "1/50",
+  "aperture": "F4.0",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "histogram",
+  "zebras": false,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 3,
+  "mode": "Movie Manual",
+  "iso": "800",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "histogram",
+  "zebras": false,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 4,
+  "mode": "Movie Manual",
+  "iso": "800",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "histogram",
+  "zebras": false,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 5,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "histogram",
+  "zebras": false,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 6,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "histogram",
+  "zebras": false,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 7,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "waveform",
+  "zebras": false,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 8,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 9,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 6000,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 10,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 24,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 11,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": false,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 12,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 13,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": true,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 14,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 15,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 16,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 17,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 18,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 19,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4"
+  ]
+ },
+ {
+  "turn": 20,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 21,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 22,
+  "mode": "Movie Manual",
+  "iso": "1600",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 23,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 24,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 25,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 26,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 27,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 28,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": true,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4"
+  ]
+ },
+ {
+  "turn": 29,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4",
+   "C0010.MP4"
+  ]
+ },
+ {
+  "turn": 30,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4",
+   "C0010.MP4"
+  ]
+ },
+ {
+  "turn": 31,
+  "mode": "Movie Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4",
+   "C0010.MP4"
+  ]
+ },
+ {
+  "turn": 32,
+  "mode": "Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4",
+   "C0010.MP4"
+  ]
+ },
+ {
+  "turn": 33,
+  "mode": "Manual",
+  "iso": "1250",
+  "shutterSpeed": "1/50",
+  "aperture": "F5.6",
+  "kelvin": 5600,
+  "focalLengthMillimetres": 21,
+  "recording": false,
+  "liveView": true,
+  "cameraDisplay": false,
+  "scope": "waveform",
+  "zebras": true,
+  "focusPeaking": true,
+  "files": [
+   "C0007.MP4",
+   "C0008.MP4",
+   "C0009.MP4",
+   "C0010.MP4",
+   "DSC00042.JPG"
+  ]
+ }
+]

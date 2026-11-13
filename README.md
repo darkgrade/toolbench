@@ -2,7 +2,7 @@
 
 # Toolbench
 
-Which local AI model gets your camera commands right?
+Which local AI models nail tool calls, and how fast?
 
 **[See the results →](https://darkgrade.com/toolbench/)**
 
@@ -29,6 +29,10 @@ English only for now.
 
 `results/toolbench.json` has every number, plus the hardware, the llama.cpp version, each model's file
 checksum and the darkgrade commit whose tools were tested.
+
+The site shows the results as a story (every model's every turn as a point of light), a replay of the shoot
+on a drawn viewfinder with each model's real waits, a grid of every turn, the field of accuracy against
+speed, side-by-side comparisons, and a page per model.
 
 ## Run locally
 

@@ -5,3 +5,5 @@ dist/
 .darkgrade-tsconfig.json
 # Full model conversations and engine logs: rewritten every run.
 results/raw/
+public/data/
+src/facts.json

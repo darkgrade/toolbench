@@ -1,30 +1,41 @@
-import { BENCH, MODELS, TABS } from '@site/data'
-import { ModelPage } from '@site/pages/model'
-import { Overview, tabFromPath } from '@site/pages/overview'
+import { BENCH, TABS } from '@site/data'
+import { Loading, Page, Shell, tabFromPath, useTab } from '@site/kit/shell'
+import { MethodView } from '@site/views/method'
+import { StoryView } from '@site/views/story'
+import { TableView } from '@site/views/table'
+import { type ComponentType, lazy, Suspense } from 'react'
 
-/** The page for a path under BENCH.path: an overview tab, or one model's page. */
-export function App({ path }: { path: string }) {
-    const id = path.replace(BENCH.path, '').replace(/\/$/, '')
-    const tab = tabFromPath(path)
-    const model = tab ? undefined : id ? MODELS.find(candidate => candidate.id === id) : undefined
+/** A view's props: how it opens another view, optionally at a query (a model, a turn). */
+export interface ViewProps {
+    onOpen: (tab: string, query?: string) => void
+}
+
+const view = (load: () => Promise<{ default: ComponentType<ViewProps> }>) => lazy(load)
+const WatchView = view(() => import('@site/views/watch'))
+const TurnsView = view(() => import('@site/views/turns'))
+const FieldView = view(() => import('@site/views/field'))
+const CompareView = view(() => import('@site/views/compare'))
+
+/** The overview: the story and the other views, each at its own path under BENCH.path. */
+export function Overview({ path }: { path: string }) {
+    // The script once had its own tab; it now sits under the method, and its address still opens there.
+    const script = path.replace(BENCH.path, '').replace(/\/$/, '') === 'script'
+    const [tab, select] = useTab(BENCH, TABS, script ? 'method' : (tabFromPath(BENCH, TABS, path) ?? TABS[0].id))
     return (
-        <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
-            <header className="flex flex-wrap items-end justify-between gap-3">
-                <div className="min-w-0">
-                    <h1><a href={BENCH.path} className="font-heading text-2xl font-semibold tracking-tight hover:underline">
-                        {BENCH.name}
-                    </a></h1>
-                    <p className="text-sm text-muted-foreground">{BENCH.tagline}</p>
-                </div>
-                <span className="ks-byline">
-                    <a href="https://darkgrade.com/">By Darkgrade</a>
-                    {' · '}
-                    <a href={`https://github.com/${BENCH.repository}`} target="_blank" rel="noopener">
-                        code on github
-                    </a>
-                </span>
-            </header>
-            {model ? <ModelPage model={model} /> : <Overview initialTab={tab ?? TABS[0].id} />}
-        </div>
+        <Shell bench={BENCH} tabs={TABS} tab={tab} onTab={select}>
+            {tab === 'story' && <StoryView onOpen={select} />}
+            {tab === 'results' && (
+                <Page>
+                    <TableView />
+                </Page>
+            )}
+            {tab === 'method' && <MethodView path={path} />}
+            <Suspense fallback={<Loading />}>
+                {tab === 'watch' && <WatchView onOpen={select} />}
+                {tab === 'turns' && <TurnsView onOpen={select} />}
+                {tab === 'tradeoff' && <FieldView onOpen={select} />}
+                {tab === 'compare' && <CompareView onOpen={select} />}
+            </Suspense>
+        </Shell>
     )
 }
