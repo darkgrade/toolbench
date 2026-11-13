@@ -1,4 +1,47 @@
 @import "tailwindcss";
 @import "@kevinschaich/components/theme.css";
 @import "@kevinschaich/components/styles.css";
+@import "@kevinschaich/components/typeset.css";
 @source "../node_modules/@kevinschaich/components/dist";
+
+/* The site is dark only: scrollbars and form controls follow. */
+html {
+    color-scheme: dark;
+}
+
+/* Labels and marks over a story's points arrive after the points have settled. */
+@keyframes ks-fade {
+    from {
+        opacity: 0;
+    }
+}
+.ks-fade {
+    animation: ks-fade 0.8s ease-out both;
+}
+.ks-fade-late {
+    animation: ks-fade 0.6s ease-out 0.9s both;
+}
+
+/* Watch: the focus box closes in on its spot, and a photo flashes the frame. */
+@keyframes ks-focus {
+    from {
+        transform: scale(1.7);
+        opacity: 0;
+    }
+}
+.ks-focus {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ks-focus 0.45s ease-out both;
+}
+@keyframes ks-flash {
+    from {
+        opacity: 0.9;
+    }
+    to {
+        opacity: 0;
+    }
+}
+.ks-flash {
+    animation: ks-flash 0.4s ease-out both;
+}

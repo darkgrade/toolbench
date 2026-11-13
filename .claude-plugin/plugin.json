@@ -1,7 +1,7 @@
 {
   "name": "toolbench",
   "title": "Toolbench",
-  "description": "Local language models driving Darkgrade Studio's real tools by voice: the results, and runs of the benchmark on this Mac, live.",
+  "description": "Local language models driving Darkgrade Studio's real tools by voice: runs of the benchmark on this Mac, live, to start and rerun.",
   "keywords": ["benchmark", "models", "app"],
   "workflows": ["toolbench"],
   "worker": { "repos": ["darkgrade/darkgrade"] },

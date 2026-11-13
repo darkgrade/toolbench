@@ -5,7 +5,7 @@
     {
       "name": "toolbench",
       "source": "./",
-      "description": "Toolbench in Outpost: its results, and its workflow's runs on this Mac's GPU."
+      "description": "Toolbench in Outpost: its workflow's runs on this Mac's GPU."
     }
   ]
 }

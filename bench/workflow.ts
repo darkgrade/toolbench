@@ -3,7 +3,7 @@
  *
  *   toolbench ─┬─ perfect              where the camera and Studio should be before each turn
  *              ├─ model × N ── pass × 1–3   one pass of the script, in a fresh process (bench/run.ts)
- *              └─ publish              results/toolbench.json and results/models/*.json, to GitHub
+ *              └─ publish              results/toolbench.json, results/models/*.json and results/perfect.json, to GitHub
  *
  * Models run one at a time (a concurrency limit of one on the GPU). Small models run three passes and
  * publish the median; mixture-of-experts models run one. A pass is kept under the script, the model's
@@ -20,6 +20,8 @@ import { type JsonObject, type TaskContext, fileHash, workflows } from 'outpost-
 const REPOSITORY = 'darkgrade/toolbench'
 const RESULTS_PATH = join(ROOT, 'results', 'toolbench.json')
 const MODEL_DIRECTORY = join(ROOT, 'results', 'models')
+/** Where the camera is before each turn, as published for the site's replay. */
+const PERFECT_START_PATH = join(ROOT, 'results', 'perfect.json')
 const PASSES_DIRECTORY = join(ROOT, 'results', 'raw', 'passes')
 
 type RunInput = { models?: string[]; force?: boolean }
@@ -48,6 +50,50 @@ function inputKey(): string {
 const modelStamp = (model: TextModel) => {
     const path = modelFile(model)
     return existsSync(path) ? `${statSync(path).size}:${statSync(path).mtimeMs}` : 'missing'
+}
+
+/** The parts of a recorded perfect-run snapshot the published file keeps. */
+interface RecordedTurnStart {
+    camera: {
+        state: {
+            settings: { iso?: string | null; shutterSpeed?: string | null; aperture?: string | null }
+            controls?: Record<string, { value: string | null } | null> | null
+            recording: boolean
+            liveView: boolean
+            osdOverlay: boolean | null
+        }
+        files: { filename: string }[]
+        focalLengthMillimetres: number
+    }
+    view: { scope: string; zebras: boolean; focusPeaking: boolean }
+}
+
+/**
+ * Writes results/perfect.json from the perfect run just recorded in results/raw/: where the camera and
+ * Studio's view are before each turn, cut down to what a person would look at. The site's replay starts
+ * each turn from it. It lives here, not in the harness, so it doesn't change what makes two passes the same.
+ */
+function publishPerfectRun(): void {
+    const recorded = JSON.parse(readFileSync(join(ROOT, 'results', 'raw', 'perfect-run.json'), 'utf8')) as Record<string, RecordedTurnStart>
+    const turns = Object.entries(recorded)
+        .map(([turn, { camera, view }]) => ({
+            turn: Number(turn),
+            mode: camera.state.controls?.exposureProgram?.value ?? '',
+            iso: camera.state.settings.iso ?? '',
+            shutterSpeed: camera.state.settings.shutterSpeed ?? '',
+            aperture: camera.state.settings.aperture ?? '',
+            kelvin: Number(camera.state.controls?.colorTemperature?.value),
+            focalLengthMillimetres: camera.focalLengthMillimetres,
+            recording: camera.state.recording,
+            liveView: camera.state.liveView,
+            cameraDisplay: camera.state.osdOverlay === true,
+            scope: view.scope,
+            zebras: view.zebras,
+            focusPeaking: view.focusPeaking,
+            files: camera.files.map(file => file.filename),
+        }))
+        .sort((first, second) => first.turn - second.turn)
+    writeFileSync(PERFECT_START_PATH, `${JSON.stringify(turns, null, 1)}\n`)
 }
 
 /** One run of bench/run.ts in a fresh process; its progress lines go to the task's log. Cancelling the run ends it. */
@@ -80,6 +126,7 @@ export async function toolbench() {
         timeout: '10m',
         fn: async (_input, context) => {
             await runHarness(['--perfect'], context)
+            publishPerfectRun()
             return { summary: 'Recorded the perfect run' }
         },
     })
@@ -126,6 +173,7 @@ export async function toolbench() {
                 const detail = join(MODEL_DIRECTORY, `${id}.json`)
                 if (existsSync(detail)) files[relative(ROOT, detail)] = readFileSync(detail, 'utf8')
             }
+            if (existsSync(PERFECT_START_PATH)) files[relative(ROOT, PERFECT_START_PATH)] = readFileSync(PERFECT_START_PATH, 'utf8')
             if (!context.inOutpost) return { commit: null, summary: 'Written here (not in Outpost, so not published)' }
             const { commit } = await context.publish({ repo: REPOSITORY, files, message: 'Update results' })
             return { commit, summary: commit ? `Published ${commit.slice(0, 7)}` : 'Nothing changed' }
