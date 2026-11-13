@@ -152,7 +152,7 @@ export function routes(): Route[] {
         path: '',
         title: `${BENCH.name} | Darkgrade`,
         description: BENCH.tagline,
-        card: { eyebrow: 'Toolbench by Darkgrade', heading: BENCH.tagline, stats: best ? [{ label: 'Top model', value: best.name }, { label: 'Score', value: String(best.score ?? '–') }] : [] },
+        card: { eyebrow: 'Toolbench', heading: BENCH.tagline, stats: best ? [{ label: 'Top model', value: best.name }, { label: 'Score', value: String(best.score ?? '–') }] : [] },
     }
     const models = MODELS.map(
         (model): Route => ({
