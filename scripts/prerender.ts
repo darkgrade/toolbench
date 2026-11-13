@@ -28,7 +28,7 @@ const fonts = createRequire(import.meta.url)
 const font = (weight: number) => readFileSync(fonts.resolve(`@fontsource/public-sans/files/public-sans-latin-${weight}-normal.woff`))
 const FONTS = [
     { name: 'Public Sans', data: font(400), weight: 400 as const, style: 'normal' as const },
-    { name: 'Public Sans', data: font(700), weight: 700 as const, style: 'normal' as const },
+    { name: 'Public Sans', data: font(600), weight: 600 as const, style: 'normal' as const },
 ]
 
 const escape = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -50,13 +50,13 @@ async function card(route: Route): Promise<Buffer> {
                 justifyContent: 'center',
                 gap: 44,
                 padding: '0 120px',
-                background: 'radial-gradient(circle at 85% 0%, #2a2216 0%, #0b0b0c 60%)',
+                background: 'radial-gradient(circle at 85% 0%, #2a2216 0%, #0a0a0b 60%)',
                 color: '#eae6dc',
                 fontFamily: 'Public Sans',
             },
             children: [
-                text(`DARKGRADE  ·  ${route.card.eyebrow.toUpperCase()}`, { fontSize: 22, letterSpacing: 6, color: '#f4c66e' }),
-                text(route.card.heading, { fontSize: route.card.heading.length > 44 ? 54 : 68, fontWeight: 700, lineHeight: 1.1, maxWidth: 960 }),
+                text(`DARKGRADE  ·  ${route.card.eyebrow.toUpperCase()}`, { fontSize: 22, letterSpacing: 6, color: '#f5cd8a' }),
+                text(route.card.heading, { fontSize: route.card.heading.length > 44 ? 54 : 68, fontWeight: 600, lineHeight: 1.1, maxWidth: 960 }),
                 {
                     type: 'div',
                     props: {
@@ -64,10 +64,10 @@ async function card(route: Route): Promise<Buffer> {
                         children: route.card.stats.map(stat => ({
                             type: 'div',
                             props: {
-                                style: { display: 'flex', flexDirection: 'column', gap: 6, padding: '18px 26px', border: '1px solid #3a3326', borderRadius: 16, background: 'rgba(244,198,110,0.06)' },
+                                style: { display: 'flex', flexDirection: 'column', gap: 6, padding: '18px 26px', border: '1px solid rgba(234, 230, 220, 0.13)', borderRadius: 16, background: 'rgba(245, 205, 138, 0.13)' },
                                 children: [
-                                    text(stat.label.toUpperCase(), { fontSize: 18, letterSpacing: 3, color: '#9c968a' }),
-                                    text(stat.value, { fontSize: 38, fontWeight: 700, color: '#f4c66e' }),
+                                    text(stat.label.toUpperCase(), { fontSize: 18, letterSpacing: 3, color: 'rgba(234, 230, 220, 0.55)' }),
+                                    text(stat.value, { fontSize: 38, fontWeight: 600, color: '#f5cd8a' }),
                                 ],
                             },
                         })),
