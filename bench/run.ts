@@ -9,6 +9,7 @@
  * the darkgrade checkout). Every tool call runs against the simulated camera, and each turn is checked
  * against the answer key. See AGENTS.md "Bench conventions".
  */
+import { withGpu } from '@bench/gpu-lock'
 import { ANSWER_KEY, type Mistake, type ToolCall, type TurnOutcome, turnCredit } from '@bench/answer-key'
 import { type RunningServer, startServer } from '@bench/engines'
 import { DROPPED_MODELS, LLAMA_CPP_RELEASE, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
@@ -452,7 +453,7 @@ async function main(): Promise<void> {
     for (const model of models) {
         console.log(`toolbench: ${model.id}${passes > 1 ? ` pass ${pass} of ${passes}` : ''}`)
         try {
-            if (!medianOnly) writeFileSync(passPath(model.id, pass), JSON.stringify({ ...(await benchmarkModel(model, pass, passes)), scriptSha256: details.input && (details.input as { scriptSha256: string }).scriptSha256 }))
+            if (!medianOnly) writeFileSync(passPath(model.id, pass), JSON.stringify({ ...(await withGpu(() => benchmarkModel(model, pass, passes), owner => console.log(`progress ${JSON.stringify({ note: `waiting for the GPU (held by ${owner.split(' ')[0]})` })}`))), scriptSha256: details.input && (details.input as { scriptSha256: string }).scriptSha256 }))
             if (pass < passes) continue
             publishMedian(model, passes, rows)
         } catch (error) {
