@@ -160,7 +160,7 @@ export async function toolbench() {
             if (results.at(-1)!.kept) await runHarness(['--models', model.id, '--pass', String(passes), '--passes', String(passes), '--median'], context)
             const row = rowOf(model.id)
             if (!row) throw new Error(`No results row for ${model.id}`)
-            if (row.error) throw new Error(String(row.error))
+            if (row.error || row.lastError) throw new Error(String(row.error || row.lastError))
             return { row, summary: `Score ${row.score ?? '–'}${passes > 1 ? ` (passes ${(row.passScores as (number | null)[]).map(score => score ?? '–').join(' · ')})` : ''}` }
         },
     })
