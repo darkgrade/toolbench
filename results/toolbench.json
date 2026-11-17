@@ -1,17 +1,17 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-12T06:56:32.898Z",
+  "date": "2026-11-17T20:18:35.947Z",
   "hardware": {
-    "machine": "Mac16,6",
-    "chip": "Apple M4 Max",
-    "memoryGigabytes": 64,
-    "cores": 16,
+    "machine": "Mac17,14",
+    "chip": "Apple M5 Max",
+    "memoryGigabytes": 36,
+    "cores": 18,
     "macOS": "27.0.1 (26A434)"
   },
   "engines": {
     "llamaServer": "version: 0.9.0-dev (build 12283, commit f3b407ca1)",
-    "harness": "bun 1.3.14"
+    "harness": "bun 1.4.4"
   },
   "input": {
     "script": "script/video-script.md",
@@ -19,7 +19,7 @@
     "turns": 33,
     "tools": {
       "source": "darkgrade/darkgrade apps/studio/src/main/tools/studio-tools.ts",
-      "commit": "c4f50e639fa2504df5f3e01d9452e965d12fb490",
+      "commit": "22e299c06d7dd5ffa7915741d2835cfbbfeee01f",
       "count": 18
     }
   },
@@ -69,12 +69,12 @@
     "settings": "Each model on llama-server with its defaults except two settings, the same for all: thinking off (`--reasoning off`), because a voice app has to act at once; and a 64k context (`--ctx-size 65536`), which holds the longest conversation (about 43k tokens) without a model reserving memory for its whole context window, so memory used reflects the model. The only other arguments are the model file and a port; requests carry no sampling options.",
     "input": "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
     "tools": "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
-    "accuracy": "Each turn is checked against the answer key by outcome: where the camera and Studio end up, not which tools were used. Lookups never count against a model and an answer's wording isn't graded. Mistakes are serious (ruins a take or your work: recording started or stopped at the wrong time, an unasked photo or download, the wrong file, the picture changed mid-take, a mode change not made, a false claim) or minor (a small adjustment missed or off, a harmless extra). A turn counts 1 when right, \u00bd with only minor mistakes, 0 with any serious one.",
+    "accuracy": "Each turn is checked against the answer key by outcome: where the camera and Studio end up, not which tools were used. Lookups never count against a model and an answer's wording isn't graded. Mistakes are serious (ruins a take or your work: recording started or stopped at the wrong time, an unasked photo or download, the wrong file, the picture changed mid-take, a mode change not made, a false claim) or minor (a small adjustment missed or off, a harmless extra). A turn counts 1 when right, ½ with only minor mistakes, 0 with any serious one.",
     "latency": "From sending a turn to the model finishing its first action, or its reply when it shouldn't act. After loading, each model reads the fixed start of every request (system prompt and tools) once, untimed, as Studio does on load.",
     "timeLimit": "10 s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a 10 s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.",
-    "score": "A 0\u2013100 score from fixed scales, so it doesn't change when other models are added: right outcome (45%: half the turns' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.",
+    "score": "A 0–100 score from fixed scales, so it doesn't change when other models are added: right outcome (45%: half the turns' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.",
     "isolation": "One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.",
-    "runs": "Small models run the script three times, each in a fresh process, and publish the run with the median score; one run can swing by 10\u201320 points for them, because one early choice carries through the conversation. Mixture-of-experts models run once."
+    "runs": "Small models run the script three times, each in a fresh process, and publish the run with the median score; one run can swing by 10–20 points for them, because one early choice carries through the conversation. Mixture-of-experts models run once."
   },
   "models": [
     {
@@ -822,6 +822,98 @@
       ]
     },
     {
+      "id": "qwen3.5-4b",
+      "score": 75,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 76,
+          "points": 34.1,
+          "why": "88% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 64,
+          "points": 9.5,
+          "why": "serious mistakes on 9% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 70,
+          "points": 17.5,
+          "why": "0.9 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 90,
+          "points": 9,
+          "why": "1.2 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "Qwen3.5 4B (Q4_K_M)",
+      "modelClass": "small",
+      "maker": "Qwen",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/unsloth/Qwen3.5-4B-GGUF",
+      "files": [
+        {
+          "name": "Qwen3.5-4B-Q4_K_M.gguf",
+          "bytes": 2740937888,
+          "sha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4"
+        }
+      ],
+      "sizeGigabytes": 2.74,
+      "turnsPassed": 0.8788,
+      "seriousMistakes": 3,
+      "minorOnly": 2,
+      "byKind": {
+        "requests": {
+          "passed": 15,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 19,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 860,
+      "decisionP90Ms": 1248,
+      "decisionMaxMs": 2263,
+      "generatedTokens": 1791,
+      "loadSeconds": 0.6,
+      "peakMemoryGigabytes": 6.91,
+      "passScores": [
+        74,
+        77,
+        75
+      ]
+    },
+    {
       "id": "gemma-4-26b-a4b",
       "score": 74,
       "coverage": 100,
@@ -1366,102 +1458,10 @@
       "decisionMaxMs": 2941,
       "generatedTokens": 1486,
       "loadSeconds": 0.6,
-      "peakMemoryGigabytes": 7.0,
+      "peakMemoryGigabytes": 7,
       "passScores": [
         80,
         69,
-        67
-      ]
-    },
-    {
-      "id": "qwen3.5-4b",
-      "score": 67,
-      "coverage": 100,
-      "reasons": [
-        {
-          "area": "Right outcome",
-          "weight": 45,
-          "score": 73,
-          "points": 32.7,
-          "why": "86% of turns right"
-        },
-        {
-          "area": "Serious mistakes",
-          "weight": 15,
-          "score": 64,
-          "points": 9.5,
-          "why": "serious mistakes on 9% of turns"
-        },
-        {
-          "area": "Clean tool calls",
-          "weight": 5,
-          "score": 100,
-          "points": 5,
-          "why": "0% of calls invalid"
-        },
-        {
-          "area": "Typical wait",
-          "weight": 25,
-          "score": 55,
-          "points": 13.8,
-          "why": "1.4 s typical wait"
-        },
-        {
-          "area": "Slow wait",
-          "weight": 10,
-          "score": 60,
-          "points": 6,
-          "why": "2.5 s for the slowest 1 in 10"
-        }
-      ],
-      "missing": [],
-      "strengths": [],
-      "weaknesses": [],
-      "name": "Qwen3.5 4B (Q4_K_M)",
-      "modelClass": "small",
-      "maker": "Qwen",
-      "licence": "Apache-2.0",
-      "source": "https://huggingface.co/unsloth/Qwen3.5-4B-GGUF",
-      "files": [
-        {
-          "name": "Qwen3.5-4B-Q4_K_M.gguf",
-          "bytes": 2740937888,
-          "sha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4"
-        }
-      ],
-      "sizeGigabytes": 2.74,
-      "turnsPassed": 0.8636,
-      "seriousMistakes": 3,
-      "minorOnly": 3,
-      "byKind": {
-        "requests": {
-          "passed": 14,
-          "total": 20
-        },
-        "questions": {
-          "passed": 4,
-          "total": 4
-        },
-        "cannotDo": {
-          "passed": 1,
-          "total": 1
-        },
-        "video": {
-          "passed": 8,
-          "total": 8
-        }
-      },
-      "toolCalls": 18,
-      "invalidToolCalls": 0,
-      "decisionMedianMs": 1436,
-      "decisionP90Ms": 2506,
-      "decisionMaxMs": 2987,
-      "generatedTokens": 1513,
-      "loadSeconds": 0.6,
-      "peakMemoryGigabytes": 6.96,
-      "passScores": [
-        68,
-        64,
         67
       ]
     },
@@ -3118,7 +3118,7 @@
       "decisionMaxMs": 8114,
       "generatedTokens": 4710,
       "loadSeconds": 0.9,
-      "peakMemoryGigabytes": 11.0,
+      "peakMemoryGigabytes": 11,
       "passScores": [
         39,
         16,
