@@ -1,14 +1,18 @@
 {
   "name": "toolbench",
   "title": "Toolbench",
-  "description": "Local language models driving Darkgrade Studio's real tools by voice: runs of the benchmark on this Mac, live, to start and rerun.",
-  "keywords": ["benchmark", "models", "app"],
-  "workflows": ["toolbench"],
-  "worker": { "repos": ["darkgrade/darkgrade"] },
-  "mcpServers": {
-    "toolbench": {
-      "command": "node",
-      "args": ["--no-warnings", "${CLAUDE_PLUGIN_ROOT}/outpost/server.ts"]
-    }
+  "description": "Local language models driving Darkgrade Studio's real tools by voice. Its workflow runs the benchmark on this Mac's GPU and publishes the results to darkgrade.com/toolbench.",
+  "keywords": [
+    "benchmark",
+    "models",
+    "workflow"
+  ],
+  "workflows": [
+    "toolbench"
+  ],
+  "worker": {
+    "repos": [
+      "darkgrade/darkgrade"
+    ]
   }
 }

@@ -1,6 +1,6 @@
 /**
- * The toolbench worker: serves the workflow's tasks on this Mac (its GPU) until stopped. In Outpost it
- * runs from Outpost's checkout (with darkgrade's beside it) and restarts on new commits; on its own it
+ * The toolbench worker: serves the workflow's tasks on this Mac (its GPU) until stopped. Outpost runs it
+ * from its own copy of this repository (with darkgrade's beside it) and restarts it on new commits; on its own it
  * starts a development engine.
  *
  *   bun run worker

@@ -1,5 +1,5 @@
 /**
- * Starts a toolbench run on the worker and prints its id. In Outpost, start runs from the app instead.
+ * Starts a toolbench run on the worker and prints its id. In Outpost, start runs from the app (Run workflow) instead.
  *
  *   bun run bench [-- --models id,id] [--force]
  */
