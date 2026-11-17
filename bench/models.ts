@@ -11,7 +11,9 @@ import { join } from 'node:path'
 export const CACHE_DIRECTORY = process.env.BENCH_CACHE ?? join(homedir(), '.cache', 'darkgrade-bench', 'toolbench')
 export const LLAMA_CPP_RELEASE = 'b12283'
 export const LLAMA_SERVER_BINARY = join(CACHE_DIRECTORY, 'llama.cpp', 'llama-server')
-export const LLAMA_MODELS = join(CACHE_DIRECTORY, 'gguf-models')
+/** Every downloaded model lives on the models drive, by kind (MODELS, default /Volumes/models): text models in text/gguf. */
+export const MODELS_DIRECTORY = process.env.MODELS ?? '/Volumes/models'
+export const LLAMA_MODELS = join(MODELS_DIRECTORY, 'text', 'gguf')
 
 /** Small dense models (around 4B) and mixture-of-experts models (about 1–4B active per word) are the two classes compared. */
 export type ModelClass = 'small' | 'mixture of experts'
