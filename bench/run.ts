@@ -464,7 +464,8 @@ async function main(): Promise<void> {
             const message = publishableError(error instanceof Error ? error.message : String(error), model)
             console.log(`  ${model.id} failed: ${message}`)
             failModel(model.id, message)
-            rows.set(model.id, { id: model.id, name: model.name, maker: model.maker, error: message })
+            // An error never replaces a published score: the model keeps its last good row (the run still fails).
+            if (typeof rows.get(model.id)?.score !== 'number') rows.set(model.id, { id: model.id, name: model.name, maker: model.maker, error: message })
             if (runningEngines().length) throw new Error(`stopping: llama-server still running after ${model.id} failed`)
         }
         const ordered = [...rows.values()].sort((first, second) => Number(second.score ?? -1) - Number(first.score ?? -1))

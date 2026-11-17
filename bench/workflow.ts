@@ -209,6 +209,8 @@ export async function toolbench() {
             }
             const published = await publishTask.run({ models }, { label: 'Publish', key: 'publish' })
             const scored = rows.filter(row => !row.error).length
+            const failed = rows.filter(row => row.error && !String(row.error).startsWith("Couldn't run:")) // llama.cpp can't load it yet: skipped, not failed
+            if (failed.length) throw new Error(`${failed.length} of ${rows.length} models failed (${published.summary}): ${failed.map(row => `${row.id}: ${row.error}`).join('; ').slice(0, 2000)}`)
             return { scored, summary: `${scored} of ${rows.length} models scored · ${published.summary}` }
         },
     })
