@@ -261,7 +261,12 @@ interface PassResult {
 
 /** One pass of the script; small models run three passes and publish the median (see main). */
 async function benchmarkModel(model: TextModel, pass: number, passes: number): Promise<PassResult> {
-    if (runningEngines().length) throw new Error('another llama-server is still running, refusing to measure')
+    // The GPU is measured alone: another llama-server (Voicebench, Outpost's local models) is waited out, an hour at most.
+    for (let waited = 0; runningEngines().length; waited += 2000) {
+        if (waited >= 3_600_000) throw new Error('another llama-server is still running after an hour, refusing to measure')
+        if (waited % 60_000 === 0) console.log(`progress {"note":"waiting for another llama-server to stop before measuring"}`)
+        await new Promise(resolve => setTimeout(resolve, 2000))
+    }
     const modelPath = join(LLAMA_MODELS, model.repository.replace('/', '__'), model.file)
     startModel(model.id, scriptTurns().length, passes > 1 ? `Pass ${pass} of ${passes}: loading the model` : undefined)
     const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`), SERVER_SETTINGS)
