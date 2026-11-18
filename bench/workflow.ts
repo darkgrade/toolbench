@@ -137,6 +137,9 @@ export async function toolbench() {
         fn: async (input, context) => {
             if (keptPass(input)) return { kept: true, score: null, summary: 'Reused from an earlier run' }
             await runHarness(['--models', input.model, '--pass', String(input.pass), '--passes', String(input.passes)], context)
+            // A model llama.cpp cannot load yet leaves no pass, only its row's reason: skipped, not failed.
+            const unloadable = rowOf(input.model)?.error
+            if (!existsSync(passPath(input.model, input.pass)) && String(unloadable).startsWith("Couldn't run:")) return { kept: false, score: null, summary: `Skipped: ${unloadable}` }
             // The pass file is the harness's; it's marked with what it ran on, so later runs can reuse it.
             const path = passPath(input.model, input.pass)
             const saved = JSON.parse(readFileSync(path, 'utf8')) as { row?: { score?: number | null }; key?: string }
@@ -155,11 +158,15 @@ export async function toolbench() {
             const passes = passesFor(model)
             const key = `${input.key}|${modelStamp(model)}`
             const results = []
-            for (let pass = 1; pass <= passes; pass++) results.push(await passTask.run({ model: model.id, pass, passes, force: input.force, key }, { label: passes > 1 ? `Pass ${pass} of ${passes}` : 'Pass', key: `pass:${model.id}:${pass}` }))
+            for (let pass = 1; pass <= passes; pass++) {
+                results.push(await passTask.run({ model: model.id, pass, passes, force: input.force, key }, { label: passes > 1 ? `Pass ${pass} of ${passes}` : 'Pass', key: `pass:${model.id}:${pass}` }))
+                if (results.at(-1)!.summary.startsWith('Skipped:')) break
+            }
             // The last pass publishes the median when it runs; when every pass was kept, publish it from them.
             if (results.at(-1)!.kept) await runHarness(['--models', model.id, '--pass', String(passes), '--passes', String(passes), '--median'], context)
             const row = rowOf(model.id)
             if (!row) throw new Error(`No results row for ${model.id}`)
+            if (String(row.error).startsWith("Couldn't run:")) return { row, summary: `Skipped: ${row.error}` }
             if (row.error || row.lastError) throw new Error(String(row.error || row.lastError))
             return { row, summary: `Score ${row.score ?? '–'}${passes > 1 ? ` (passes ${(row.passScores as (number | null)[]).map(score => score ?? '–').join(' · ')})` : ''}` }
         },
