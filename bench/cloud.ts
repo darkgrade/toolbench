@@ -4,7 +4,7 @@
  * gateway with the worker's own Outpost token (OUTPOST_MCP_URL, OUTPOST_MCP_TOKEN), so the harness never holds a
  * vendor's credential: Outpost swaps the token for the real one and counts the call in its Spend.
  *
- * Each vendor in its own words, at its lowest effort: OpenAI's models through Bedrock's OpenAI-compatible chat API,
+ * Each vendor in its own words, at the model's lowest effort (found by asking it): OpenAI's models through Bedrock's Responses API,
  * Gemini through Vertex's, Claude through Bedrock's Anthropic Messages API. Replies are read whole (not streamed):
  * a cloud model's wait includes the network and the vendor's queue, so its first-token time means nothing here.
  */
@@ -79,7 +79,57 @@ function anthropicMessages(messages: ChatMessage[]): { system: string; messages:
     return { system, messages: out }
 }
 
+// Each model's lowest effort, found by asking it: the model's own refusal says what it supports. Asked from the
+// lowest any vendor has; kept for the rest of the run, so the row is named for the level every turn really ran at.
+const LADDER = ['none', 'minimal', 'low', 'medium', 'high']
+const lowest = new Map<string, string>()
+export const effortUsed = (settings: CloudSettings): string => lowest.get(settings.model) ?? settings.effort
+async function atLowest(settings: CloudSettings, call: (effort: string) => Promise<CloudReply>): Promise<CloudReply> {
+    for (let effort = effortUsed(settings); ; ) {
+        try {
+            const reply = await call(effort)
+            lowest.set(settings.model, effort)
+            return reply
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            if (!/HTTP 400/.test(message) || !/effort/i.test(message)) throw error
+            // "Supported values are: 'low', 'medium', …" names them; otherwise the next step up the ladder.
+            const listed = message.match(/[Ss]upported values are:? ([^."]+)/)?.[1]?.match(/'([a-z]+)'/g)?.map(value => value.slice(1, -1))
+            const next = listed?.length ? LADDER.find(value => listed.includes(value)) ?? listed[0] : LADDER[LADDER.indexOf(effort) + 1]
+            if (!next || next === effort) throw error
+            effort = next
+        }
+    }
+}
+
+/** The conversation as OpenAI's Responses API takes it (Bedrock takes tools with a reasoning effort only there). */
+function responsesInput(messages: ChatMessage[]): { instructions: string; input: any[] } {
+    const instructions = messages.filter(message => message.role === 'system').map(message => message.content).join('\n\n')
+    const input: any[] = []
+    for (const message of messages) {
+        if (message.role === 'user') input.push({ role: 'user', content: message.content })
+        else if (message.role === 'tool') input.push({ type: 'function_call_output', call_id: message.tool_call_id, output: message.content })
+        else if (message.role === 'assistant') {
+            if (message.content) input.push({ role: 'assistant', content: message.content })
+            for (const call of message.tool_calls ?? []) input.push({ type: 'function_call', call_id: call.id, name: call.function.name, arguments: call.function.arguments || '{}' })
+        }
+    }
+    return { instructions, input }
+}
+function fromResponses(answer: any): CloudReply {
+    const output: any[] = answer.output ?? []
+    return {
+        content: output.filter(item => item.type === 'message').flatMap(item => item.content ?? []).filter((part: any) => part.type === 'output_text').map((part: any) => part.text).join(''),
+        calls: output.filter(item => item.type === 'function_call').map(item => ({ id: item.call_id, type: 'function', function: { name: item.name, arguments: item.arguments ?? '{}' } })),
+        promptTokens: answer.usage?.input_tokens ?? null,
+        generatedTokens: answer.usage?.output_tokens ?? null,
+    }
+}
+
 export async function cloudStep(settings: CloudSettings, messages: ChatMessage[], tools: OpenAITool[], signal: AbortSignal): Promise<CloudReply> {
+    return atLowest(settings, effort => callAt({ ...settings, effort }, messages, tools, signal))
+}
+async function callAt(settings: CloudSettings, messages: ChatMessage[], tools: OpenAITool[], signal: AbortSignal): Promise<CloudReply> {
     if (settings.api === 'anthropic') {
         const { system, messages: turns } = anthropicMessages(messages)
         const answer = await post(`${settings.provider}/model/${encodeURIComponent(settings.model)}/invoke`, {
@@ -98,7 +148,16 @@ export async function cloudStep(settings: CloudSettings, messages: ChatMessage[]
             generatedTokens: answer.usage?.output_tokens ?? null,
         }
     }
-    if (settings.api === 'openai')
-        return fromChatCompletion(await post(`${settings.provider}/openai/v1/chat/completions`, { model: settings.model, messages, tools, reasoning_effort: settings.effort }, signal))
+    if (settings.api === 'openai') {
+        const { instructions, input } = responsesInput(messages)
+        return fromResponses(await post(`${settings.provider}/openai/v1/responses`, {
+            model: settings.model,
+            instructions,
+            input,
+            tools: tools.map(tool => ({ type: 'function', name: tool.function.name, description: tool.function.description, parameters: tool.function.parameters })),
+            reasoning: { effort: settings.effort },
+            store: false,
+        }, signal))
+    }
     return fromChatCompletion(await post(`${settings.provider}/v1/endpoints/openapi/chat/completions`, { model: `google/${settings.model}`, messages, tools, reasoning_effort: settings.effort }, signal))
 }

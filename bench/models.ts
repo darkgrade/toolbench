@@ -113,12 +113,13 @@ export const TEXT_MODELS: TextModel[] = [
  * its vendor's lowest effort, the nearest a cloud model comes to the local models' thinking off, and its name says
  * so. Never run by default: only when a run asks for them (`cloud: true`, or by id).
  */
+/** A cloud model's name with the effort it ran at: "Claude Opus 5.5 (Low Effort)", "GPT-6 Luna (No Effort)". */
+export const withEffort = (name: string, effort: string): string => `${name.replace(/ \([A-Za-z]+ Effort\)$/, '')} (${effort === 'none' ? 'No' : `${effort[0].toUpperCase()}${effort.slice(1)}`} Effort)`
 const cloud = (id: string, name: string, maker: string, effort: string, settings: Omit<CloudSettings, 'effort'>): TextModel =>
-    ({ id, modelClass: 'cloud', name: `${name} (${effort === 'none' ? 'No' : `${effort[0].toUpperCase()}${effort.slice(1)}`} Effort)`, maker, licence: 'Proprietary', repository: '', file: '', cloud: { ...settings, effort } })
+    ({ id, modelClass: 'cloud', name: withEffort(name, effort), maker, licence: 'Proprietary', repository: '', file: '', cloud: { ...settings, effort } })
 const claude = (id: string, name: string, model: string) => cloud(id, `Claude ${name}`, 'Anthropic', 'low', { provider: 'bedrock', model, api: 'anthropic' })
-// Each model's lowest effort: none for GPT-6 Luna and GPT-6.1 Terra (Bedrock refuses tools with any reasoning effort
-// for them on its chat API), low for GPT-6.2, which has no none.
-const openai = (id: string, name: string, model: string, effort = 'none') => cloud(id, name, 'OpenAI', effort, { provider: 'bedrock', model, api: 'openai' })
+// The lowest any vendor has; bench/cloud.ts steps up to what each model accepts and the row is named for it.
+const openai = (id: string, name: string, model: string) => cloud(id, name, 'OpenAI', 'none', { provider: 'bedrock', model, api: 'openai' })
 const gemini = (id: string, name: string, model: string, effort = 'low') => cloud(id, name, 'Google', effort, { provider: 'agent-platform', model, api: 'gemini' })
 export const CLOUD_MODELS: TextModel[] = [
     claude('claude-haiku-5.5', 'Haiku 5.5', 'us.anthropic.claude-haiku-5-5'),
@@ -127,8 +128,8 @@ export const CLOUD_MODELS: TextModel[] = [
     claude('claude-fable-5.2', 'Fable 5.2', 'us.anthropic.claude-fable-5-2'),
     openai('gpt-6-luna', 'GPT-6 Luna', 'openai.gpt-6-luna'),
     openai('gpt-6.1-terra', 'GPT-6.1 Terra', 'openai.gpt-6.1-terra'),
-    openai('gpt-6.2-sol', 'GPT-6.2 Sol', 'openai.gpt-6.2-sol', 'low'),
-    openai('gpt-6.2-astra', 'GPT-6.2 Astra', 'openai.gpt-6.2-astra', 'low'),
+    openai('gpt-6.2-sol', 'GPT-6.2 Sol', 'openai.gpt-6.2-sol'),
+    openai('gpt-6.2-astra', 'GPT-6.2 Astra', 'openai.gpt-6.2-astra'),
     gemini('gemini-3.5-flash-lite', 'Gemini 3.5 Flash-Lite', 'gemini-3.5-flash-lite', 'minimal'),
     gemini('gemini-4-hydrogen', 'Gemini 4 Hydrogen', 'gemini-4-hydrogen'),
     gemini('gemini-4-argon', 'Gemini 4 Argon', 'gemini-4-argon'),

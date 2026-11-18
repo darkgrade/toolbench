@@ -12,8 +12,8 @@
 import { withGpu } from '@bench/gpu-lock'
 import { ANSWER_KEY, type Mistake, type ToolCall, type TurnOutcome, turnCredit } from '@bench/answer-key'
 import { type RunningServer, startServer } from '@bench/engines'
-import { ALL_MODELS, DROPPED_MODELS, LLAMA_CPP_RELEASE, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
-import { cloudStep } from '@bench/cloud'
+import { ALL_MODELS, withEffort, DROPPED_MODELS, LLAMA_CPP_RELEASE, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
+import { cloudStep, effortUsed } from '@bench/cloud'
 import { SCRIPT_PATH, scriptTurns } from '@bench/script'
 import { cameraService } from '@main/camera-service'
 import type { CameraSnapshot } from '@bench/simulated-camera'
@@ -339,12 +339,12 @@ async function measure(model: TextModel, pass: number, passes: number, server: R
     const row = {
         id: model.id,
         ...scored,
-        name: model.name,
+        name: model.cloud ? withEffort(model.name, effortUsed(model.cloud)) : model.name,
         modelClass: model.modelClass,
         maker: model.maker,
         licence: model.licence,
         ...(model.cloud
-            ? { cloud: { provider: model.cloud.provider === 'bedrock' ? 'Amazon Bedrock' : 'Google Cloud', model: model.cloud.model, effort: model.cloud.effort }, files: [], sizeGigabytes: null }
+            ? { cloud: { provider: model.cloud.provider === 'bedrock' ? 'Amazon Bedrock' : 'Google Cloud', model: model.cloud.model, effort: effortUsed(model.cloud) }, files: [], sizeGigabytes: null }
             : {
                   source: `https://huggingface.co/${model.repository}`,
                   files: [{ name: model.file, bytes: statSync(modelPath).size, sha256: await sha256(modelPath) }],
