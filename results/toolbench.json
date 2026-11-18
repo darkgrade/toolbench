@@ -1,7 +1,7 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-17T21:33:56.920Z",
+  "date": "2026-11-18T00:21:52.700Z",
   "hardware": {
     "machine": "Mac17,14",
     "chip": "Apple M5 Max",
@@ -19,7 +19,7 @@
     "turns": 33,
     "tools": {
       "source": "darkgrade/darkgrade apps/studio/src/main/tools/studio-tools.ts",
-      "commit": "22e299c06d7dd5ffa7915741d2835cfbbfeee01f",
+      "commit": "795d35a545bcfe2c9e9f0c4c03d18805e30bf1d6",
       "count": 18
     }
   },
@@ -79,7 +79,7 @@
   "models": [
     {
       "id": "ornith-1.5-35b-a3b",
-      "score": 84,
+      "score": 89,
       "coverage": 100,
       "reasons": [
         {
@@ -106,16 +106,16 @@
         {
           "area": "Typical wait",
           "weight": 25,
-          "score": 58,
-          "points": 14.4,
-          "why": "1.3 s typical wait"
+          "score": 72,
+          "points": 17.9,
+          "why": "0.8 s typical wait"
         },
         {
           "area": "Slow wait",
           "weight": 10,
-          "score": 69,
-          "points": 6.9,
-          "why": "2.1 s for the slowest 1 in 10"
+          "score": 91,
+          "points": 9.1,
+          "why": "1.2 s for the slowest 1 in 10"
         }
       ],
       "missing": [],
@@ -141,11 +141,11 @@
       "minorOnly": 2,
       "byKind": {
         "requests": {
-          "passed": 19,
+          "passed": 18,
           "total": 20
         },
         "questions": {
-          "passed": 3,
+          "passed": 4,
           "total": 4
         },
         "cannotDo": {
@@ -157,16 +157,16 @@
           "total": 8
         }
       },
-      "toolCalls": 25,
+      "toolCalls": 23,
       "invalidToolCalls": 0,
-      "decisionMedianMs": 1327,
-      "decisionP90Ms": 2063,
-      "decisionMaxMs": 3926,
-      "generatedTokens": 1452,
-      "loadSeconds": 9.8,
-      "peakMemoryGigabytes": 25.62,
+      "decisionMedianMs": 807,
+      "decisionP90Ms": 1244,
+      "decisionMaxMs": 2583,
+      "generatedTokens": 1475,
+      "loadSeconds": 1.6,
+      "peakMemoryGigabytes": 25.57,
       "passScores": [
-        84
+        89
       ]
     },
     {
@@ -540,100 +540,6 @@
       ]
     },
     {
-      "id": "spark-x2.6-4b",
-      "score": 77,
-      "coverage": 100,
-      "reasons": [
-        {
-          "area": "Right outcome",
-          "weight": 45,
-          "score": 85,
-          "points": 38.2,
-          "why": "92% of turns right"
-        },
-        {
-          "area": "Serious mistakes",
-          "weight": 15,
-          "score": 76,
-          "points": 11.4,
-          "why": "serious mistakes on 6% of turns"
-        },
-        {
-          "area": "Clean tool calls",
-          "weight": 5,
-          "score": 100,
-          "points": 5,
-          "why": "0% of calls invalid"
-        },
-        {
-          "area": "Typical wait",
-          "weight": 25,
-          "score": 58,
-          "points": 14.5,
-          "why": "1.3 s typical wait"
-        },
-        {
-          "area": "Slow wait",
-          "weight": 10,
-          "score": 77,
-          "points": 7.7,
-          "why": "1.7 s for the slowest 1 in 10"
-        }
-      ],
-      "missing": [],
-      "strengths": [
-        "92% of turns right"
-      ],
-      "weaknesses": [],
-      "name": "Spark-X2.6 4B (Q4_K_M)",
-      "modelClass": "small",
-      "maker": "XHToken",
-      "licence": "Apache-2.0",
-      "source": "https://huggingface.co/XHToken/Spark-X2.6-4B-GGUF",
-      "files": [
-        {
-          "name": "Spark-X2.6-4B-Q4_K_M.gguf",
-          "bytes": 3543441312,
-          "sha256": "91cb2811aebb47ac916aa619d27d4cdd7f4143106b7917accb8ead4cd7f5cbd9"
-        }
-      ],
-      "sizeGigabytes": 3.54,
-      "turnsPassed": 0.9242,
-      "seriousMistakes": 2,
-      "minorOnly": 1,
-      "byKind": {
-        "requests": {
-          "passed": 17,
-          "total": 20
-        },
-        "questions": {
-          "passed": 4,
-          "total": 4
-        },
-        "cannotDo": {
-          "passed": 1,
-          "total": 1
-        },
-        "video": {
-          "passed": 8,
-          "total": 8
-        }
-      },
-      "toolCalls": 20,
-      "invalidToolCalls": 0,
-      "decisionMedianMs": 1311,
-      "decisionP90Ms": 1700,
-      "decisionMaxMs": 2415,
-      "generatedTokens": 937,
-      "loadSeconds": 0.5,
-      "peakMemoryGigabytes": 8.09,
-      "passScores": [
-        78,
-        72,
-        77
-      ]
-    },
-    {
       "id": "ornith-1.5-9b",
       "score": 75,
       "coverage": 100,
@@ -911,6 +817,192 @@
         74,
         77,
         75
+      ]
+    },
+    {
+      "id": "spark-x2.6-1.7b",
+      "score": 75,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 64,
+          "points": 28.6,
+          "why": "82% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 39,
+          "points": 5.9,
+          "why": "serious mistakes on 15% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 100,
+          "points": 25,
+          "why": "0.3 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 100,
+          "points": 10,
+          "why": "0.4 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [
+        "0.3 s typical wait"
+      ],
+      "weaknesses": [],
+      "name": "Spark-X2.6 1.7B (Q4_K_M)",
+      "modelClass": "small",
+      "maker": "XHToken",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/XHToken/Spark-X2.6-1.7B-GGUF",
+      "files": [
+        {
+          "name": "Spark-X2.6-1.7B-Q4_K_M.gguf",
+          "bytes": 1768720512,
+          "sha256": "7abd9859c10924be3c583945456fa9b25d0569484876105a7b7376f7938fffb7"
+        }
+      ],
+      "sizeGigabytes": 1.77,
+      "turnsPassed": 0.8182,
+      "seriousMistakes": 5,
+      "minorOnly": 2,
+      "byKind": {
+        "requests": {
+          "passed": 14,
+          "total": 20
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 0,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 21,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 288,
+      "decisionP90Ms": 441,
+      "decisionMaxMs": 687,
+      "generatedTokens": 737,
+      "loadSeconds": 0.4,
+      "peakMemoryGigabytes": 3.66,
+      "passScores": [
+        79,
+        75,
+        75
+      ]
+    },
+    {
+      "id": "spark-x2.6-4b",
+      "score": 74,
+      "coverage": 100,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "weight": 45,
+          "score": 70,
+          "points": 31.4,
+          "why": "85% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "weight": 15,
+          "score": 52,
+          "points": 7.7,
+          "why": "serious mistakes on 12% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "weight": 5,
+          "score": 100,
+          "points": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "weight": 25,
+          "score": 79,
+          "points": 19.8,
+          "why": "0.6 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "weight": 10,
+          "score": 100,
+          "points": 10,
+          "why": "0.8 s for the slowest 1 in 10"
+        }
+      ],
+      "missing": [],
+      "strengths": [],
+      "weaknesses": [],
+      "name": "Spark-X2.6 4B (Q4_K_M)",
+      "modelClass": "small",
+      "maker": "XHToken",
+      "licence": "Apache-2.0",
+      "source": "https://huggingface.co/XHToken/Spark-X2.6-4B-GGUF",
+      "files": [
+        {
+          "name": "Spark-X2.6-4B-Q4_K_M.gguf",
+          "bytes": 3543441312,
+          "sha256": "91cb2811aebb47ac916aa619d27d4cdd7f4143106b7917accb8ead4cd7f5cbd9"
+        }
+      ],
+      "sizeGigabytes": 3.54,
+      "turnsPassed": 0.8485,
+      "seriousMistakes": 4,
+      "minorOnly": 2,
+      "byKind": {
+        "requests": {
+          "passed": 15,
+          "total": 20
+        },
+        "questions": {
+          "passed": 3,
+          "total": 4
+        },
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "toolCalls": 21,
+      "invalidToolCalls": 0,
+      "decisionMedianMs": 619,
+      "decisionP90Ms": 778,
+      "decisionMaxMs": 1411,
+      "generatedTokens": 973,
+      "loadSeconds": 0.5,
+      "peakMemoryGigabytes": 8.04,
+      "passScores": [
+        75,
+        74,
+        71
       ]
     },
     {
@@ -1279,98 +1371,6 @@
         73,
         69,
         70
-      ]
-    },
-    {
-      "id": "spark-x2.6-1.7b",
-      "score": 69,
-      "coverage": 100,
-      "reasons": [
-        {
-          "area": "Right outcome",
-          "weight": 45,
-          "score": 61,
-          "points": 27.3,
-          "why": "80% of turns right"
-        },
-        {
-          "area": "Serious mistakes",
-          "weight": 15,
-          "score": 39,
-          "points": 5.9,
-          "why": "serious mistakes on 15% of turns"
-        },
-        {
-          "area": "Clean tool calls",
-          "weight": 5,
-          "score": 100,
-          "points": 5,
-          "why": "0% of calls invalid"
-        },
-        {
-          "area": "Typical wait",
-          "weight": 25,
-          "score": 84,
-          "points": 21,
-          "why": "0.5 s typical wait"
-        },
-        {
-          "area": "Slow wait",
-          "weight": 10,
-          "score": 100,
-          "points": 10,
-          "why": "0.7 s for the slowest 1 in 10"
-        }
-      ],
-      "missing": [],
-      "strengths": [],
-      "weaknesses": [],
-      "name": "Spark-X2.6 1.7B (Q4_K_M)",
-      "modelClass": "small",
-      "maker": "XHToken",
-      "licence": "Apache-2.0",
-      "source": "https://huggingface.co/XHToken/Spark-X2.6-1.7B-GGUF",
-      "files": [
-        {
-          "name": "Spark-X2.6-1.7B-Q4_K_M.gguf",
-          "bytes": 1768720512,
-          "sha256": "7abd9859c10924be3c583945456fa9b25d0569484876105a7b7376f7938fffb7"
-        }
-      ],
-      "sizeGigabytes": 1.77,
-      "turnsPassed": 0.803,
-      "seriousMistakes": 5,
-      "minorOnly": 3,
-      "byKind": {
-        "requests": {
-          "passed": 13,
-          "total": 20
-        },
-        "questions": {
-          "passed": 4,
-          "total": 4
-        },
-        "cannotDo": {
-          "passed": 0,
-          "total": 1
-        },
-        "video": {
-          "passed": 8,
-          "total": 8
-        }
-      },
-      "toolCalls": 22,
-      "invalidToolCalls": 0,
-      "decisionMedianMs": 523,
-      "decisionP90Ms": 734,
-      "decisionMaxMs": 976,
-      "generatedTokens": 747,
-      "loadSeconds": 0.4,
-      "peakMemoryGigabytes": 3.74,
-      "passScores": [
-        69,
-        69,
-        69
       ]
     },
     {
