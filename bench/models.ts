@@ -114,9 +114,10 @@ export const TEXT_MODELS: TextModel[] = [
  * so. Never run by default: only when a run asks for them (`cloud: true`, or by id).
  */
 const cloud = (id: string, name: string, maker: string, effort: string, settings: Omit<CloudSettings, 'effort'>): TextModel =>
-    ({ id, modelClass: 'cloud', name: `${name} (${effort[0].toUpperCase()}${effort.slice(1)} Effort)`, maker, licence: 'Proprietary', repository: '', file: '', cloud: { ...settings, effort } })
+    ({ id, modelClass: 'cloud', name: `${name} (${effort === 'none' ? 'No' : `${effort[0].toUpperCase()}${effort.slice(1)}`} Effort)`, maker, licence: 'Proprietary', repository: '', file: '', cloud: { ...settings, effort } })
 const claude = (id: string, name: string, model: string) => cloud(id, `Claude ${name}`, 'Anthropic', 'low', { provider: 'bedrock', model, api: 'anthropic' })
-const openai = (id: string, name: string, model: string) => cloud(id, name, 'OpenAI', 'low', { provider: 'bedrock', model, api: 'openai' })
+// OpenAI's lowest with tools is none (Bedrock refuses tools with any reasoning effort on its chat API).
+const openai = (id: string, name: string, model: string) => cloud(id, name, 'OpenAI', 'none', { provider: 'bedrock', model, api: 'openai' })
 const gemini = (id: string, name: string, model: string, effort = 'low') => cloud(id, name, 'Google', effort, { provider: 'agent-platform', model, api: 'gemini' })
 export const CLOUD_MODELS: TextModel[] = [
     claude('claude-haiku-5.5', 'Haiku 5.5', 'us.anthropic.claude-haiku-5-5'),

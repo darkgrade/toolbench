@@ -69,13 +69,13 @@
     "settings": "Each model on llama-server with its defaults except two settings, the same for all: thinking off (`--reasoning off`), because a voice app has to act at once; and a 64k context (`--ctx-size 65536`), which holds the longest conversation (about 43k tokens) without a model reserving memory for its whole context window, so memory used reflects the model. The only other arguments are the model file and a port; requests carry no sampling options.",
     "input": "The script's turns, word for word (a perfect transcript), sent one at a time as one conversation. Each turn also carries the camera's current status, as Darkgrade Studio's assistant does. The system prompt is Studio's assistant prompt plus one line saying the person is filming.",
     "tools": "Darkgrade Studio's own tool library, unchanged, running against a simulated camera that starts as the script's setup describes. Up to five model calls per turn, as in Studio.",
-    "accuracy": "Each turn is checked against the answer key by outcome: where the camera and Studio end up, not which tools were used. Lookups never count against a model and an answer's wording isn't graded. Mistakes are serious (ruins a take or your work: recording started or stopped at the wrong time, an unasked photo or download, the wrong file, the picture changed mid-take, a mode change not made, a false claim) or minor (a small adjustment missed or off, a harmless extra). A turn counts 1 when right, ½ with only minor mistakes, 0 with any serious one.",
+    "accuracy": "Each turn is checked against the answer key by outcome: where the camera and Studio end up, not which tools were used. Lookups never count against a model and an answer's wording isn't graded. Mistakes are serious (ruins a take or your work: recording started or stopped at the wrong time, an unasked photo or download, the wrong file, the picture changed mid-take, a mode change not made, a false claim) or minor (a small adjustment missed or off, a harmless extra). A turn counts 1 when right, \u00bd with only minor mistakes, 0 with any serious one.",
     "latency": "From sending a turn to the model finishing its first action, or its reply when it shouldn't act. After loading, each model reads the fixed start of every request (system prompt and tools) once, untimed, as Studio does on load.",
     "timeLimit": "10 s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a 10 s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.",
-    "score": "A 0–100 score from fixed scales, so it doesn't change when other models are added: right outcome (45%: half the turns' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.",
+    "score": "A 0\u2013100 score from fixed scales, so it doesn't change when other models are added: right outcome (45%: half the turns' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.",
     "cloud": "Cloud models (shown only in the table, behind its switch) are the 12 Outpost offers, each vendor's four tiers, called through Outpost's model gateway: OpenAI's and Anthropic's on Amazon Bedrock, Google's on Google Cloud. Each runs once at its vendor's lowest effort (named in the model's name), the nearest a cloud model comes to thinking off. Their waits include the network and the vendor's queue, so they are not this Mac's speed; they have no download, memory or load time.",
     "isolation": "One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.",
-    "runs": "Small models run the script three times, each in a fresh process, and publish the run with the median score; one run can swing by 10–20 points for them, because one early choice carries through the conversation. Mixture-of-experts models run once."
+    "runs": "Small models run the script three times, each in a fresh process, and publish the run with the median score; one run can swing by 10\u201320 points for them, because one early choice carries through the conversation. Mixture-of-experts models run once."
   },
   "models": [
     {
@@ -3314,160 +3314,6 @@
         62,
         39,
         36
-      ]
-    },
-    {
-      "id": "gpt-6-luna",
-      "score": 38,
-      "coverage": 65,
-      "reasons": [
-        {
-          "area": "Right outcome",
-          "weight": 45,
-          "score": 27,
-          "points": 12.3,
-          "why": "64% of turns right"
-        },
-        {
-          "area": "Serious mistakes",
-          "weight": 15,
-          "score": 52,
-          "points": 7.7,
-          "why": "serious mistakes on 12% of turns"
-        },
-        {
-          "area": "Clean tool calls",
-          "weight": 5,
-          "score": 100,
-          "points": 5,
-          "why": "0% of calls invalid"
-        }
-      ],
-      "missing": [
-        "Typical wait",
-        "Slow wait"
-      ],
-      "strengths": [],
-      "weaknesses": [],
-      "name": "GPT-6 Luna (Low Effort)",
-      "modelClass": "cloud",
-      "maker": "OpenAI",
-      "licence": "Proprietary",
-      "cloud": {
-        "provider": "Amazon Bedrock",
-        "model": "openai.gpt-6-luna",
-        "effort": "low"
-      },
-      "files": [],
-      "sizeGigabytes": null,
-      "turnsPassed": 0.6364,
-      "seriousMistakes": 4,
-      "minorOnly": 16,
-      "byKind": {
-        "requests": {
-          "passed": 0,
-          "total": 20
-        },
-        "questions": {
-          "passed": 4,
-          "total": 4
-        },
-        "cannotDo": {
-          "passed": 1,
-          "total": 1
-        },
-        "video": {
-          "passed": 8,
-          "total": 8
-        }
-      },
-      "toolCalls": 0,
-      "invalidToolCalls": 0,
-      "decisionMedianMs": null,
-      "decisionP90Ms": null,
-      "decisionMaxMs": null,
-      "generatedTokens": 0,
-      "loadSeconds": null,
-      "peakMemoryGigabytes": null,
-      "passScores": [
-        38
-      ]
-    },
-    {
-      "id": "gemini-3.5-flash-lite",
-      "score": 38,
-      "coverage": 65,
-      "reasons": [
-        {
-          "area": "Right outcome",
-          "weight": 45,
-          "score": 27,
-          "points": 12.3,
-          "why": "64% of turns right"
-        },
-        {
-          "area": "Serious mistakes",
-          "weight": 15,
-          "score": 52,
-          "points": 7.7,
-          "why": "serious mistakes on 12% of turns"
-        },
-        {
-          "area": "Clean tool calls",
-          "weight": 5,
-          "score": 100,
-          "points": 5,
-          "why": "0% of calls invalid"
-        }
-      ],
-      "missing": [
-        "Typical wait",
-        "Slow wait"
-      ],
-      "strengths": [],
-      "weaknesses": [],
-      "name": "Gemini 3.5 Flash-Lite (Minimal Effort)",
-      "modelClass": "cloud",
-      "maker": "Google",
-      "licence": "Proprietary",
-      "cloud": {
-        "provider": "Google Cloud",
-        "model": "gemini-3.5-flash-lite",
-        "effort": "minimal"
-      },
-      "files": [],
-      "sizeGigabytes": null,
-      "turnsPassed": 0.6364,
-      "seriousMistakes": 4,
-      "minorOnly": 16,
-      "byKind": {
-        "requests": {
-          "passed": 0,
-          "total": 20
-        },
-        "questions": {
-          "passed": 4,
-          "total": 4
-        },
-        "cannotDo": {
-          "passed": 1,
-          "total": 1
-        },
-        "video": {
-          "passed": 8,
-          "total": 8
-        }
-      },
-      "toolCalls": 0,
-      "invalidToolCalls": 0,
-      "decisionMedianMs": null,
-      "decisionP90Ms": null,
-      "decisionMaxMs": null,
-      "generatedTokens": 0,
-      "loadSeconds": null,
-      "peakMemoryGigabytes": null,
-      "passScores": [
-        38
       ]
     },
     {

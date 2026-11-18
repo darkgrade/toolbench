@@ -320,6 +320,9 @@ async function measure(model: TextModel, pass: number, passes: number, server: R
         await server?.stop()
     }
     if (server && runningEngines().length) throw new Error('llama-server did not exit')
+    // A cloud model whose requests failed has no score: the vendor or the gateway refused, not the model.
+    const refused = model.cloud && records.find(record => record.reply.startsWith('(error:'))
+    if (refused) throw new Error(`${model.name}: ${refused.reply.slice(8, 400)}`)
     const decisions = records.map(record => record.decisionMs).filter((value): value is number => value !== null)
     const calls = records.flatMap(record => record.calls)
     const turnsPassed = records.reduce((sum, record) => sum + record.credit, 0) / records.length
