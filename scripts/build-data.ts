@@ -11,6 +11,7 @@ interface ModelRow {
     id: string
     score?: number | null
     error?: string
+    modelClass?: string
 }
 
 interface RecordedTurn {
@@ -29,7 +30,8 @@ const ROOT = resolve(import.meta.dirname, '..')
 const read = <T>(...path: string[]): T => JSON.parse(readFileSync(join(ROOT, ...path), 'utf8')) as T
 
 const results = read<{ models: ModelRow[] }>('results', 'toolbench.json')
-const models = results.models.filter(model => !model.error && model.score !== undefined && model.score !== null)
+// Local models only: the cloud ones are in the table alone (src/data.ts CLOUD_MODELS), never in the overview's views.
+const models = results.models.filter(model => !model.error && model.score !== undefined && model.score !== null && model.modelClass !== 'cloud')
 const script = readFileSync(join(ROOT, 'script', 'video-script.md'), 'utf8').split('## Answer key')[0]
 
 /** The script's stretches, in order, named for people rather than as the stage directions word them. */
