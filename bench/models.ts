@@ -16,7 +16,7 @@ export const MODELS_DIRECTORY = process.env.MODELS ?? '/Volumes/models'
 export const LLAMA_MODELS = join(MODELS_DIRECTORY, 'text', 'gguf')
 
 /** Small dense models (around 4B) and mixture-of-experts models (about 1–4B active per word) are the two classes compared. */
-export type ModelClass = 'small' | 'mixture of experts'
+export type ModelClass = 'small' | 'mixture of experts' | 'cloud'
 
 export interface TextModel {
     id: string
@@ -26,6 +26,16 @@ export interface TextModel {
     licence: string
     repository: string
     file: string
+    /** A cloud model, called through Outpost's model gateway: no file, no engine, no GPU. */
+    cloud?: CloudSettings
+}
+
+/** How a cloud model is called: Outpost's provider, the vendor's id, its API's shape and its lowest effort. */
+export interface CloudSettings {
+    provider: 'bedrock' | 'agent-platform'
+    model: string
+    api: 'anthropic' | 'openai' | 'gemini'
+    effort: string
 }
 
 const text = (id: string, name: string, repository: string, file: string): TextModel => ({ id, modelClass: MIXTURE_OF_EXPERTS.has(id) ? 'mixture of experts' : 'small', name, maker: MAKERS[id.split('-')[0]] ?? repository.split('/')[0], licence: LICENCES[id] ?? 'Apache-2.0', repository, file })
@@ -97,3 +107,30 @@ export const TEXT_MODELS: TextModel[] = [
     text('raon-1-nano', 'Raon-1 nano 3B (Q4_K_M)', 'KRAFTON/Raon-1-nano-gguf', 'raon-1-nano-Q4_K_M.gguf'),
     text('nemotron-labs-dory-4b', 'Nemotron Labs Dory 1.0 4B (Q5_K_M)', 'nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-GGUF', 'NVIDIA-Nemotron-Labs-Dory1.0-4B-Q5_K_M.gguf'),
 ]
+
+/**
+ * The 12 cloud models Outpost offers (each vendor's four tiers), for comparison with the local ones. Each runs at
+ * its vendor's lowest effort, the nearest a cloud model comes to the local models' thinking off, and its name says
+ * so. Never run by default: only when a run asks for them (`cloud: true`, or by id).
+ */
+const cloud = (id: string, name: string, maker: string, effort: string, settings: Omit<CloudSettings, 'effort'>): TextModel =>
+    ({ id, modelClass: 'cloud', name: `${name} (${effort[0].toUpperCase()}${effort.slice(1)} Effort)`, maker, licence: 'Proprietary', repository: '', file: '', cloud: { ...settings, effort } })
+const claude = (id: string, name: string, model: string) => cloud(id, `Claude ${name}`, 'Anthropic', 'low', { provider: 'bedrock', model, api: 'anthropic' })
+const openai = (id: string, name: string, model: string) => cloud(id, name, 'OpenAI', 'low', { provider: 'bedrock', model, api: 'openai' })
+const gemini = (id: string, name: string, model: string, effort = 'low') => cloud(id, name, 'Google', effort, { provider: 'agent-platform', model, api: 'gemini' })
+export const CLOUD_MODELS: TextModel[] = [
+    claude('claude-haiku-5.5', 'Haiku 5.5', 'us.anthropic.claude-haiku-5-5'),
+    claude('claude-sonnet-5.5', 'Sonnet 5.5', 'us.anthropic.claude-sonnet-5-5'),
+    claude('claude-opus-5.5', 'Opus 5.5', 'us.anthropic.claude-opus-5-5'),
+    claude('claude-fable-5.2', 'Fable 5.2', 'us.anthropic.claude-fable-5-2'),
+    openai('gpt-6-luna', 'GPT-6 Luna', 'openai.gpt-6-luna'),
+    openai('gpt-6.1-terra', 'GPT-6.1 Terra', 'openai.gpt-6.1-terra'),
+    openai('gpt-6.2-sol', 'GPT-6.2 Sol', 'openai.gpt-6.2-sol'),
+    openai('gpt-6.2-astra', 'GPT-6.2 Astra', 'openai.gpt-6.2-astra'),
+    gemini('gemini-3.5-flash-lite', 'Gemini 3.5 Flash-Lite', 'gemini-3.5-flash-lite', 'minimal'),
+    gemini('gemini-4-hydrogen', 'Gemini 4 Hydrogen', 'gemini-4-hydrogen'),
+    gemini('gemini-4-argon', 'Gemini 4 Argon', 'gemini-4-argon'),
+    gemini('gemini-4-carbon', 'Gemini 4 Carbon', 'gemini-4-carbon'),
+]
+/** Every model a run can name: the local ones, then the cloud ones. */
+export const ALL_MODELS: TextModel[] = [...TEXT_MODELS, ...CLOUD_MODELS]

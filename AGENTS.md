@@ -21,6 +21,14 @@ Each turn starts where a perfect run would be (`bench/run.ts --perfect` plays th
 `perfect` calls once), so one mistake isn't counted again in later turns. Each model runs in its own
 process, because Studio's tools keep their undo history in memory.
 
+## Cloud models
+
+`bench/models.ts` CLOUD_MODELS lists the 12 cloud models Outpost offers (each vendor's four tiers), each at its
+vendor's lowest effort, which its name says ("Claude Opus 5.5 (Low Effort)"). They run only when asked (`cloud: true`
+on the workflow, `bun run bench -- --cloud`, or by id), once each, through Outpost's model gateway with the worker's
+Outpost token (`bench/cloud.ts`): no engine, no GPU lock, no vendor credential in the harness. The site shows them
+only in the table, behind its switch (off by default); every other view and page is local models only.
+
 ## Bench conventions
 
 Voicebench, toolbench and cambench share this layout and these rules. Keep them in step: when one

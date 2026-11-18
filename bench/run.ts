@@ -12,7 +12,8 @@
 import { withGpu } from '@bench/gpu-lock'
 import { ANSWER_KEY, type Mistake, type ToolCall, type TurnOutcome, turnCredit } from '@bench/answer-key'
 import { type RunningServer, startServer } from '@bench/engines'
-import { DROPPED_MODELS, LLAMA_CPP_RELEASE, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
+import { ALL_MODELS, DROPPED_MODELS, LLAMA_CPP_RELEASE, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
+import { cloudStep } from '@bench/cloud'
 import { SCRIPT_PATH, scriptTurns } from '@bench/script'
 import { cameraService } from '@main/camera-service'
 import type { CameraSnapshot } from '@bench/simulated-camera'
@@ -85,6 +86,13 @@ interface Step {
 /** One streamed chat completion with Studio's tools, timed. */
 async function step(url: string, messages: ChatMessage[], signal: AbortSignal): Promise<Step> {
     const startedMs = performance.now()
+    // A cloud model ("cloud:<id>"): one whole reply through Outpost's model gateway (bench/cloud.ts).
+    const cloud = url.startsWith('cloud:') ? ALL_MODELS.find(model => model.id === url.slice(6))?.cloud : undefined
+    if (cloud) {
+        const reply = await cloudStep(cloud, messages, OPENAI_TOOLS, signal)
+        const endedMs = performance.now() - startedMs
+        return { firstTokenMs: endedMs, endedMs, promptTokens: reply.promptTokens, generatedTokens: reply.generatedTokens, generatedTokensPerSecond: null, content: reply.content, calls: reply.calls }
+    }
     const record: Step = { firstTokenMs: null, endedMs: 0, promptTokens: null, generatedTokens: null, generatedTokensPerSecond: null, content: '', calls: [] }
     const response = await fetch(`${url}/v1/chat/completions`, {
         method: 'POST',
@@ -262,6 +270,7 @@ interface PassResult {
 
 /** One pass of the script; small models run three passes and publish the median (see main). */
 async function benchmarkModel(model: TextModel, pass: number, passes: number): Promise<PassResult> {
+    if (model.cloud) return measure(model, pass, passes, null, `cloud:${model.id}`)
     // The GPU is measured alone: another llama-server (Voicebench, Outpost's local models) is waited out, an hour at most.
     for (let waited = 0; runningEngines().length; waited += 2000) {
         if (waited >= 3_600_000) throw new Error('another llama-server is still running after an hour, refusing to measure')
@@ -271,13 +280,19 @@ async function benchmarkModel(model: TextModel, pass: number, passes: number): P
     const modelPath = join(LLAMA_MODELS, model.repository.replace('/', '__'), model.file)
     startModel(model.id, scriptTurns().length, passes > 1 ? `Pass ${pass} of ${passes}: loading the model` : undefined)
     const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`), SERVER_SETTINGS)
+    return measure(model, pass, passes, server, server.url, modelPath)
+}
+
+/** The script through one model: a local one on its server, or a cloud one (no server, no file, no warm-up). */
+async function measure(model: TextModel, pass: number, passes: number, server: RunningServer | null, url: string, modelPath = ''): Promise<PassResult> {
+    if (!server) startModel(model.id, scriptTurns().length, passes > 1 ? `Pass ${pass} of ${passes}` : undefined)
     const turns = scriptTurns()
     const records: TurnRecord[] = []
     cameraService.reset()
     cameraService.useFrame(FRAME_PATH)
     studioView.report({ ...STARTING_VIEW })
     const conversation: ChatMessage[] = [{ role: 'system', content: AGENT_INSTRUCTIONS }]
-    await warmUp(server.url)
+    if (server) await warmUp(url)
     const perfect = JSON.parse(readFileSync(PERFECT_PATH, 'utf8')) as Record<string, { camera: CameraSnapshot; view: StudioViewState }>
     try {
         for (const { turn, text } of turns) {
@@ -289,7 +304,7 @@ async function benchmarkModel(model: TextModel, pass: number, passes: number): P
             studioView.report({ ...perfect[turn].view })
             const before = { camera: structuredClone(cameraService.getState()), view: { ...studioView.getState()! } }
             const eventCount = cameraService.events.length
-            const result = await runTurn(server.url, conversation, text)
+            const result = await runTurn(url, conversation, text)
             const after = { camera: structuredClone(cameraService.getState()), view: { ...studioView.getState()! } }
             const outcome: TurnOutcome = { before, after, events: cameraService.events.slice(eventCount), calls: result.calls, reply: result.reply }
             const mistakes: Mistake[] = [...(result.timedOut ? [{ severity: 'serious' as const, reason: `took longer than ${TURN_LIMIT_MS / 1000} s to decide` }] : []), ...expectation.check(outcome)]
@@ -302,9 +317,9 @@ async function benchmarkModel(model: TextModel, pass: number, passes: number): P
             console.log(`  ${model.id} turn ${turn}: ${failures.length ? `FAIL ${failures.join('; ')}` : 'pass'} (${Math.round(result.decisionMs ?? result.totalMs)} ms)`)
         }
     } finally {
-        await server.stop()
+        await server?.stop()
     }
-    if (runningEngines().length) throw new Error('llama-server did not exit')
+    if (server && runningEngines().length) throw new Error('llama-server did not exit')
     const decisions = records.map(record => record.decisionMs).filter((value): value is number => value !== null)
     const calls = records.flatMap(record => record.calls)
     const turnsPassed = records.reduce((sum, record) => sum + record.credit, 0) / records.length
@@ -325,9 +340,13 @@ async function benchmarkModel(model: TextModel, pass: number, passes: number): P
         modelClass: model.modelClass,
         maker: model.maker,
         licence: model.licence,
-        source: `https://huggingface.co/${model.repository}`,
-        files: [{ name: model.file, bytes: statSync(modelPath).size, sha256: await sha256(modelPath) }],
-        sizeGigabytes: Number((statSync(modelPath).size / 1e9).toFixed(2)),
+        ...(model.cloud
+            ? { cloud: { provider: model.cloud.provider === 'bedrock' ? 'Amazon Bedrock' : 'Google Cloud', model: model.cloud.model, effort: model.cloud.effort }, files: [], sizeGigabytes: null }
+            : {
+                  source: `https://huggingface.co/${model.repository}`,
+                  files: [{ name: model.file, bytes: statSync(modelPath).size, sha256: await sha256(modelPath) }],
+                  sizeGigabytes: Number((statSync(modelPath).size / 1e9).toFixed(2)),
+              }),
         turnsPassed: Number(turnsPassed.toFixed(4)),
         seriousMistakes: records.filter(record => record.credit === 0).length,
         minorOnly: records.filter(record => record.credit === 0.5).length,
@@ -338,9 +357,9 @@ async function benchmarkModel(model: TextModel, pass: number, passes: number): P
         decisionP90Ms,
         decisionMaxMs: percentile(decisions, 1),
         generatedTokens: records.reduce((sum, record) => sum + record.generatedTokens, 0),
-        loadSeconds: Number((server.loadMs / 1000).toFixed(1)),
+        loadSeconds: server ? Number((server.loadMs / 1000).toFixed(1)) : null,
         // macOS leaves the memory-mapped model file out of a process's footprint, so it's added back.
-        peakMemoryGigabytes: Number(((server.peakFootprintBytes + statSync(modelPath).size) / 1e9).toFixed(2)),
+        peakMemoryGigabytes: server ? Number(((server.peakFootprintBytes + statSync(modelPath).size) / 1e9).toFixed(2)) : null,
     }
     return { row, turns: records }
 }
@@ -406,6 +425,7 @@ async function runDetails(): Promise<Record<string, unknown>> {
             latency: "From sending a turn to the model finishing its first action, or its reply when it shouldn't act. After loading, each model reads the fixed start of every request (system prompt and tools) once, untimed, as Studio does on load.",
             timeLimit: `${TURN_LIMIT_MS / 1000} s for every model to decide: its first action, or its answer when it shouldn't act (read-only lookups first count toward it). Past it, the turn is cut off and counts as wrong and as a ${TURN_LIMIT_MS / 1000} s wait. As in Darkgrade Studio, a tool runs as soon as it's called and the short reply comes afterwards, so the reply isn't timed.`,
             score: 'A 0–100 score from fixed scales, so it doesn\'t change when other models are added: right outcome (45%: half the turns\' credit scores 0, all of it 100), serious mistakes (15%: on a quarter of turns scores 0, none 100), clean tool calls (5%: one call in five invalid scores 0, none 100), typical wait (25%: 10 s scores 0, 0.3 s scores 100) and slow wait, the slowest 1 in 10 (10%: 10 s scores 0, 1 s scores 100), waits on a log scale.',
+            cloud: "Cloud models (shown only in the table, behind its switch) are the 12 Outpost offers, each vendor's four tiers, called through Outpost's model gateway: OpenAI's and Anthropic's on Amazon Bedrock, Google's on Google Cloud. Each runs once at its vendor's lowest effort (named in the model's name), the nearest a cloud model comes to thinking off. Their waits include the network and the vendor's queue, so they are not this Mac's speed; they have no download, memory or load time.",
             isolation: 'One model at a time. The run refuses to start a model while another llama-server is alive, and confirms each has exited.',
             runs: 'Small models run the script three times, each in a fresh process, and publish the run with the median score; one run can swing by 10–20 points for them, because one early choice carries through the conversation. Mixture-of-experts models run once.',
         },
@@ -439,7 +459,7 @@ async function main(): Promise<void> {
     // Every pass already run (kept from an earlier run): only the median is published again.
     const medianOnly = argumentsGiven.includes('--median')
     const listed = argumentsGiven.includes('--models') ? argumentsGiven[argumentsGiven.indexOf('--models') + 1].split(',') : null
-    const models = listed ? TEXT_MODELS.filter(model => listed.includes(model.id)) : TEXT_MODELS
+    const models = listed ? ALL_MODELS.filter(model => listed.includes(model.id)) : TEXT_MODELS
     mkdirSync(RAW_DIRECTORY, { recursive: true })
     mkdirSync(MODEL_DIRECTORY, { recursive: true })
     ensureFrame()
@@ -453,7 +473,7 @@ async function main(): Promise<void> {
     for (const model of models) {
         console.log(`toolbench: ${model.id}${passes > 1 ? ` pass ${pass} of ${passes}` : ''}`)
         try {
-            if (!medianOnly) writeFileSync(passPath(model.id, pass), JSON.stringify({ ...(await withGpu(() => benchmarkModel(model, pass, passes), owner => console.log(`progress ${JSON.stringify({ note: `waiting for the GPU (held by ${owner.split(' ')[0]})` })}`))), scriptSha256: details.input && (details.input as { scriptSha256: string }).scriptSha256 }))
+            if (!medianOnly) writeFileSync(passPath(model.id, pass), JSON.stringify({ ...(await (model.cloud ? benchmarkModel(model, pass, passes) : withGpu(() => benchmarkModel(model, pass, passes), owner => console.log(`progress ${JSON.stringify({ note: `waiting for the GPU (held by ${owner.split(' ')[0]})` })}`)))), scriptSha256: details.input && (details.input as { scriptSha256: string }).scriptSha256 }))
             if (pass < passes) continue
             publishMedian(model, passes, rows)
         } catch (error) {

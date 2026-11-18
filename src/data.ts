@@ -60,12 +60,14 @@ export interface ModelSummary {
     strengths?: string[]
     weaknesses?: string[]
     name: string
-    modelClass?: 'small' | 'mixture of experts'
+    modelClass?: 'small' | 'mixture of experts' | 'cloud'
+    /** A cloud model (only in the table, behind its switch): who serves it and the effort it ran at. */
+    cloud?: { provider: string; model: string; effort: string }
     maker: string
     licence?: string
     source?: string
     files?: { name: string; bytes: number; sha256: string }[]
-    sizeGigabytes?: number
+    sizeGigabytes?: number | null
     error?: string
     turnsPassed?: number
     seriousMistakes?: number
@@ -108,7 +110,11 @@ export interface ModelDetail {
 }
 
 export const RUN = results as RunDetails
-export const MODELS = RUN.models.filter(model => !model.error && model.score !== undefined)
+const SCORED = RUN.models.filter(model => !model.error && model.score !== undefined)
+/** The local models: every view and page. */
+export const MODELS = SCORED.filter(model => model.modelClass !== 'cloud')
+/** The cloud models, at their lowest effort: only in the table, and only when its switch is on. */
+export const CLOUD_MODELS = SCORED.filter(model => model.modelClass === 'cloud')
 
 /** The model a path names, if it is a model's own page. */
 export function modelFromPath(path: string): ModelSummary | undefined {

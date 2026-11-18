@@ -9,7 +9,7 @@
  * publish the median; mixture-of-experts models run one. A pass is kept under the script, the model's
  * file, the harness and Studio's tools, so a later run reuses it; "Run without cache" (force) redoes all.
  */
-import { TEXT_MODELS, LLAMA_MODELS, type TextModel } from '@bench/models'
+import { ALL_MODELS, CLOUD_MODELS, TEXT_MODELS, LLAMA_MODELS, type TextModel } from '@bench/models'
 import { DARKGRADE, ROOT, writeStudioConfig } from '@bench/studio-config'
 import { spawn, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
@@ -24,15 +24,16 @@ const MODEL_DIRECTORY = join(ROOT, 'results', 'models')
 const PERFECT_START_PATH = join(ROOT, 'results', 'perfect.json')
 const PASSES_DIRECTORY = join(ROOT, 'results', 'raw', 'passes')
 
-type RunInput = { models?: string[]; force?: boolean }
+// cloud: the 12 cloud models too (off unless asked; or name them in models).
+type RunInput = { models?: string[]; force?: boolean; cloud?: boolean }
 type ModelInput = { model: string; force?: boolean; key: string }
 type PassInput = { model: string; pass: number; passes: number; force?: boolean; key: string }
 type Row = JsonObject
 
-/** Small models' scores swing between runs, so they run three times; mixture-of-experts models once. */
+/** Small models' scores swing between runs, so they run three times; mixture-of-experts and cloud models once. */
 const passesFor = (model: TextModel): number => (model.modelClass === 'small' ? 3 : 1)
 const modelById = (id: string): TextModel => {
-    const model = TEXT_MODELS.find(candidate => candidate.id === id)
+    const model = ALL_MODELS.find(candidate => candidate.id === id)
     if (!model) throw new Error(`unknown model ${id}`)
     return model
 }
@@ -48,6 +49,7 @@ function inputKey(): string {
     return [fileHash(join(ROOT, 'script', 'video-script.md')), ...bench, tools].join('|')
 }
 const modelStamp = (model: TextModel) => {
+    if (model.cloud) return `${model.cloud.provider}:${model.cloud.model}:${model.cloud.effort}`
     const path = modelFile(model)
     return existsSync(path) ? `${statSync(path).size}:${statSync(path).mtimeMs}` : 'missing'
 }
@@ -192,7 +194,7 @@ export async function toolbench() {
         timeout: '72h',
         fn: async (input, context) => {
             mkdirSync(PASSES_DIRECTORY, { recursive: true })
-            const models = input.models ?? TEXT_MODELS.map(model => model.id)
+            const models = input.models ?? [...TEXT_MODELS, ...(input.cloud ? CLOUD_MODELS : [])].map(model => model.id)
             await context.plan([
                 { key: 'perfect', label: 'Perfect run', kind: 'perfect' },
                 ...models.flatMap(id => {
