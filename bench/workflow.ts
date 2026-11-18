@@ -142,6 +142,7 @@ export async function toolbench() {
             // A model llama.cpp cannot load yet leaves no pass, only its row's reason: skipped, not failed.
             const unloadable = rowOf(input.model)?.error
             if (!existsSync(passPath(input.model, input.pass)) && String(unloadable).startsWith("Couldn't run:")) return { kept: false, score: null, summary: `Skipped: ${unloadable}` }
+            if (!existsSync(passPath(input.model, input.pass))) throw new Error(unloadable ? String(unloadable) : 'the pass ended without a result')
             // The pass file is the harness's; it's marked with what it ran on, so later runs can reuse it.
             const path = passPath(input.model, input.pass)
             const saved = JSON.parse(readFileSync(path, 'utf8')) as { row?: { score?: number | null }; key?: string }
