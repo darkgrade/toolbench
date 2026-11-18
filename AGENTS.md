@@ -27,7 +27,7 @@ process, because Studio's tools keep their undo history in memory.
 vendor's lowest effort, which its name says ("Claude Opus 5.5 (Low Effort)"). They run only when asked (`cloud: true`
 on the workflow, `bun run bench -- --cloud`, or by id), once each, through Outpost's model gateway with the worker's
 Outpost token (`bench/cloud.ts`): no engine, no GPU lock, no vendor credential in the harness. The site shows them
-only in the table, behind its switch (off by default); every other view and page is local models only.
+only in the table, behind its Local, Cloud, Both choice (Local by default); every other view and page is local models only.
 
 ## Bench conventions
 

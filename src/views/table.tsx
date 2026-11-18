@@ -1,5 +1,5 @@
 /** Every model as a sortable table, with the filters: the plain view of the results. */
-import { Badge, Empty, EmptyDescription, EmptyHeader, EmptyTitle, Leaderboard, type LeaderboardColumn, Switch, Tabs, TabsList, TabsTrigger } from '@kevinschaich/components'
+import { Badge, Empty, EmptyDescription, EmptyHeader, EmptyTitle, Leaderboard, type LeaderboardColumn, Tabs, TabsList, TabsTrigger } from '@kevinschaich/components'
 import { BENCH, CLOUD_MODELS, FILTERS, MODELS, type ModelSummary, percent, sampleSentence, seconds } from '@site/data'
 import { useState } from 'react'
 
@@ -58,16 +58,24 @@ export function Filters({ chosen, choose }: { chosen: Record<string, string>; ch
 }
 
 /** The models a set of filter choices leaves. */
-export function useFilters(withCloud = false): { chosen: Record<string, string>; choose: (filter: string, option: string) => void; shown: ModelSummary[] } {
+/** Where the models in the table run: on this Mac (the default), in the cloud at their lowest effort, or both. */
+const WHERE = [
+    { id: 'local', label: 'Local' },
+    { id: 'cloud', label: 'Cloud' },
+    { id: 'both', label: 'Both' },
+] as const
+type Where = (typeof WHERE)[number]['id']
+
+export function useFilters(where: Where = 'local'): { chosen: Record<string, string>; choose: (filter: string, option: string) => void; shown: ModelSummary[] } {
     const [chosen, setChosen] = useState<Record<string, string>>(Object.fromEntries(FILTERS.map(filter => [filter.id, 'all'])))
-    const shown = [...MODELS, ...(withCloud ? CLOUD_MODELS : [])].filter(model => FILTERS.every(filter => filter.options.find(option => option.id === chosen[filter.id])!.matches(model)))
+    const shown = [...(where === 'cloud' ? [] : MODELS), ...(where === 'local' ? [] : CLOUD_MODELS)].filter(model => FILTERS.every(filter => filter.options.find(option => option.id === chosen[filter.id])!.matches(model)))
     const choose = (filter: string, option: string) => setChosen(previous => ({ ...previous, [filter]: option }))
     return { chosen, choose, shown }
 }
 
 export function TableView() {
-    const [withCloud, setWithCloud] = useState(false)
-    const { chosen, choose, shown } = useFilters(withCloud)
+    const [where, setWhere] = useState<Where>('local')
+    const { chosen, choose, shown } = useFilters(where)
     if (MODELS.length === 0)
         return (
             <Empty className="border">
@@ -79,14 +87,19 @@ export function TableView() {
         )
     return (
         <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <Filters chosen={chosen} choose={choose} />
+            <div className="flex flex-wrap gap-2">
                 {CLOUD_MODELS.length > 0 && (
-                    <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Switch checked={withCloud} onCheckedChange={setWithCloud} />
-                        Cloud models, at their lowest effort
-                    </label>
+                    <Tabs value={where} onValueChange={value => setWhere(value as Where)}>
+                        <TabsList aria-label="Where the models run">
+                            {WHERE.map(option => (
+                                <TabsTrigger key={option.id} value={option.id}>
+                                    {option.label}
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </Tabs>
                 )}
+                <Filters chosen={chosen} choose={choose} />
             </div>
             <Leaderboard rows={shown} rowKey={model => model.id} defaultSort="score" columns={COLUMNS} />
             <p className="text-sm text-muted-foreground">
