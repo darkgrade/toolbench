@@ -1,7 +1,7 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-18T02:26:19.887Z",
+  "date": "2026-11-18T03:00:37.065Z",
   "hardware": {
     "machine": "Mac17,14",
     "chip": "Apple M5 Max",
@@ -169,6 +169,276 @@
       "passScores": [
         92
       ]
+    },
+    {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "requests": {
+          "passed": 19,
+          "total": 20
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "low",
+        "model": "openai.gpt-6.2-sol",
+        "provider": "Amazon Bedrock"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 1664,
+      "decisionMedianMs": 653,
+      "decisionP90Ms": 1232,
+      "files": [],
+      "generatedTokens": 915,
+      "id": "gpt-6.2-sol",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "OpenAI",
+      "minorOnly": 1,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "GPT-6.2 Sol (Low Effort)",
+      "passScores": [
+        92
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 43.6,
+          "score": 97,
+          "weight": 45,
+          "why": "98% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 19.5,
+          "score": 78,
+          "weight": 25,
+          "why": "0.7 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 9.1,
+          "score": 91,
+          "weight": 10,
+          "why": "1.2 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 92,
+      "seriousMistakes": 0,
+      "sizeGigabytes": null,
+      "strengths": [
+        "98% of turns right"
+      ],
+      "toolCalls": 22,
+      "turnsPassed": 0.9848,
+      "weaknesses": []
+    },
+    {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "requests": {
+          "passed": 20,
+          "total": 20
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "minimal",
+        "model": "gemini-3.5-flash-lite",
+        "provider": "Google Cloud"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 2413,
+      "decisionMedianMs": 686,
+      "decisionP90Ms": 1466,
+      "files": [],
+      "generatedTokens": 618,
+      "id": "gemini-3.5-flash-lite",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "Google",
+      "minorOnly": 0,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "Gemini 3.5 Flash-Lite (Minimal Effort)",
+      "passScores": [
+        92
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 45,
+          "score": 100,
+          "weight": 45,
+          "why": "100% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 19.1,
+          "score": 76,
+          "weight": 25,
+          "why": "0.7 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 8.3,
+          "score": 83,
+          "weight": 10,
+          "why": "1.5 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 92,
+      "seriousMistakes": 0,
+      "sizeGigabytes": null,
+      "strengths": [
+        "100% of turns right"
+      ],
+      "toolCalls": 23,
+      "turnsPassed": 1,
+      "weaknesses": []
+    },
+    {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "requests": {
+          "passed": 19,
+          "total": 20
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "none",
+        "model": "openai.gpt-6.1-terra",
+        "provider": "Amazon Bedrock"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 2252,
+      "decisionMedianMs": 726,
+      "decisionP90Ms": 1418,
+      "files": [],
+      "generatedTokens": 804,
+      "id": "gpt-6.1-terra",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "OpenAI",
+      "minorOnly": 1,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "GPT-6.1 Terra (No Effort)",
+      "passScores": [
+        91
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 43.6,
+          "score": 97,
+          "weight": 45,
+          "why": "98% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 18.7,
+          "score": 75,
+          "weight": 25,
+          "why": "0.7 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 8.5,
+          "score": 85,
+          "weight": 10,
+          "why": "1.4 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 91,
+      "seriousMistakes": 0,
+      "sizeGigabytes": null,
+      "strengths": [
+        "98% of turns right"
+      ],
+      "toolCalls": 22,
+      "turnsPassed": 0.9848,
+      "weaknesses": []
     },
     {
       "id": "ornith-1.5-35b-a3b",
@@ -357,6 +627,186 @@
       ]
     },
     {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "requests": {
+          "passed": 20,
+          "total": 20
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "low",
+        "model": "us.anthropic.claude-sonnet-5-5",
+        "provider": "Amazon Bedrock"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 2674,
+      "decisionMedianMs": 1099,
+      "decisionP90Ms": 2069,
+      "files": [],
+      "generatedTokens": 2325,
+      "id": "claude-sonnet-5.5",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "Anthropic",
+      "minorOnly": 0,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "Claude Sonnet 5.5 (Low Effort)",
+      "passScores": [
+        88
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 45,
+          "score": 100,
+          "weight": 45,
+          "why": "100% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 15.7,
+          "score": 63,
+          "weight": 25,
+          "why": "1.1 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 6.8,
+          "score": 68,
+          "weight": 10,
+          "why": "2.1 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 88,
+      "seriousMistakes": 0,
+      "sizeGigabytes": null,
+      "strengths": [
+        "100% of turns right"
+      ],
+      "toolCalls": 24,
+      "turnsPassed": 1,
+      "weaknesses": []
+    },
+    {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "requests": {
+          "passed": 20,
+          "total": 20
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "low",
+        "model": "openai.gpt-6.2-astra",
+        "provider": "Amazon Bedrock"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 2839,
+      "decisionMedianMs": 1151,
+      "decisionP90Ms": 1632,
+      "files": [],
+      "generatedTokens": 912,
+      "id": "gpt-6.2-astra",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "OpenAI",
+      "minorOnly": 0,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "GPT-6.2 Astra (Low Effort)",
+      "passScores": [
+        88
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 45,
+          "score": 100,
+          "weight": 45,
+          "why": "100% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 15.4,
+          "score": 62,
+          "weight": 25,
+          "why": "1.2 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 7.9,
+          "score": 79,
+          "weight": 10,
+          "why": "1.6 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 88,
+      "seriousMistakes": 0,
+      "sizeGigabytes": null,
+      "strengths": [
+        "100% of turns right"
+      ],
+      "toolCalls": 23,
+      "turnsPassed": 1,
+      "weaknesses": []
+    },
+    {
       "id": "nemotron-3.5-lightning",
       "score": 87,
       "coverage": 100,
@@ -449,94 +899,184 @@
       ]
     },
     {
-      "id": "claude-haiku-5.5",
-      "score": 86,
-      "coverage": 100,
-      "reasons": [
-        {
-          "area": "Right outcome",
-          "weight": 45,
-          "score": 100,
-          "points": 45,
-          "why": "100% of turns right"
-        },
-        {
-          "area": "Serious mistakes",
-          "weight": 15,
-          "score": 100,
-          "points": 15,
-          "why": "serious mistakes on 0% of turns"
-        },
-        {
-          "area": "Clean tool calls",
-          "weight": 5,
-          "score": 100,
-          "points": 5,
-          "why": "0% of calls invalid"
-        },
-        {
-          "area": "Typical wait",
-          "weight": 25,
-          "score": 57,
-          "points": 14.2,
-          "why": "1.4 s typical wait"
-        },
-        {
-          "area": "Slow wait",
-          "weight": 10,
-          "score": 66,
-          "points": 6.6,
-          "why": "2.2 s for the slowest 1 in 10"
-        }
-      ],
-      "missing": [],
-      "strengths": [
-        "100% of turns right"
-      ],
-      "weaknesses": [],
-      "name": "Claude Haiku 5.5 (Low Effort)",
-      "modelClass": "cloud",
-      "maker": "Anthropic",
-      "licence": "Proprietary",
-      "cloud": {
-        "provider": "Amazon Bedrock",
-        "model": "us.anthropic.claude-haiku-5-5",
-        "effort": "low"
-      },
-      "files": [],
-      "sizeGigabytes": null,
-      "turnsPassed": 1,
-      "seriousMistakes": 0,
-      "minorOnly": 0,
       "byKind": {
-        "requests": {
-          "passed": 20,
-          "total": 20
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
         },
         "questions": {
           "passed": 4,
           "total": 4
         },
-        "cannotDo": {
-          "passed": 1,
-          "total": 1
+        "requests": {
+          "passed": 19,
+          "total": 20
         },
         "video": {
           "passed": 8,
           "total": 8
         }
       },
-      "toolCalls": 23,
+      "cloud": {
+        "effort": "low",
+        "model": "us.anthropic.claude-haiku-5-5",
+        "provider": "Amazon Bedrock"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 3401,
+      "decisionMedianMs": 1344,
+      "decisionP90Ms": 2252,
+      "files": [],
+      "generatedTokens": 2728,
+      "id": "claude-haiku-5.5",
       "invalidToolCalls": 0,
-      "decisionMedianMs": 1363,
-      "decisionP90Ms": 2184,
-      "decisionMaxMs": 3797,
-      "generatedTokens": 2859,
+      "licence": "Proprietary",
       "loadSeconds": null,
-      "peakMemoryGigabytes": null,
+      "maker": "Anthropic",
+      "minorOnly": 1,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "Claude Haiku 5.5 (Low Effort)",
       "passScores": [
-        86
-      ]
+        84
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 43.6,
+          "score": 97,
+          "weight": 45,
+          "why": "98% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 14.3,
+          "score": 57,
+          "weight": 25,
+          "why": "1.3 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 6.5,
+          "score": 65,
+          "weight": 10,
+          "why": "2.3 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 84,
+      "seriousMistakes": 0,
+      "sizeGigabytes": null,
+      "strengths": [
+        "98% of turns right"
+      ],
+      "toolCalls": 22,
+      "turnsPassed": 0.9848,
+      "weaknesses": []
+    },
+    {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "requests": {
+          "passed": 20,
+          "total": 20
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "low",
+        "model": "us.anthropic.claude-opus-5-5",
+        "provider": "Amazon Bedrock"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 4549,
+      "decisionMedianMs": 1883,
+      "decisionP90Ms": 2452,
+      "files": [],
+      "generatedTokens": 2452,
+      "id": "claude-opus-5.5",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "Anthropic",
+      "minorOnly": 0,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "Claude Opus 5.5 (Low Effort)",
+      "passScores": [
+        83
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 45,
+          "score": 100,
+          "weight": 45,
+          "why": "100% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 11.9,
+          "score": 48,
+          "weight": 25,
+          "why": "1.9 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 6.1,
+          "score": 61,
+          "weight": 10,
+          "why": "2.5 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 83,
+      "seriousMistakes": 0,
+      "sizeGigabytes": null,
+      "strengths": [
+        "100% of turns right"
+      ],
+      "toolCalls": 23,
+      "turnsPassed": 1,
+      "weaknesses": []
     },
     {
       "id": "gpt-oss-20b",
@@ -1189,94 +1729,184 @@
       ]
     },
     {
-      "id": "claude-fable-5.2",
-      "score": 77,
-      "coverage": 100,
-      "reasons": [
-        {
-          "area": "Right outcome",
-          "weight": 45,
-          "score": 100,
-          "points": 45,
-          "why": "100% of turns right"
-        },
-        {
-          "area": "Serious mistakes",
-          "weight": 15,
-          "score": 100,
-          "points": 15,
-          "why": "serious mistakes on 0% of turns"
-        },
-        {
-          "area": "Clean tool calls",
-          "weight": 5,
-          "score": 100,
-          "points": 5,
-          "why": "0% of calls invalid"
-        },
-        {
-          "area": "Typical wait",
-          "weight": 25,
-          "score": 31,
-          "points": 7.7,
-          "why": "3.4 s typical wait"
-        },
-        {
-          "area": "Slow wait",
-          "weight": 10,
-          "score": 39,
-          "points": 3.9,
-          "why": "4.1 s for the slowest 1 in 10"
-        }
-      ],
-      "missing": [],
-      "strengths": [
-        "100% of turns right"
-      ],
-      "weaknesses": [],
-      "name": "Claude Fable 5.2 (Low Effort)",
-      "modelClass": "cloud",
-      "maker": "Anthropic",
-      "licence": "Proprietary",
-      "cloud": {
-        "provider": "Amazon Bedrock",
-        "model": "us.anthropic.claude-fable-5-2",
-        "effort": "low"
-      },
-      "files": [],
-      "sizeGigabytes": null,
-      "turnsPassed": 1,
-      "seriousMistakes": 0,
-      "minorOnly": 0,
       "byKind": {
-        "requests": {
-          "passed": 20,
-          "total": 20
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
         },
         "questions": {
           "passed": 4,
           "total": 4
         },
-        "cannotDo": {
-          "passed": 1,
-          "total": 1
+        "requests": {
+          "passed": 18,
+          "total": 20
         },
         "video": {
           "passed": 8,
           "total": 8
         }
       },
-      "toolCalls": 22,
+      "cloud": {
+        "effort": "low",
+        "model": "gemini-4-hydrogen",
+        "provider": "Google Cloud"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 10000,
+      "decisionMedianMs": 1489,
+      "decisionP90Ms": 3429,
+      "files": [],
+      "generatedTokens": 1941,
+      "id": "gemini-4-hydrogen",
       "invalidToolCalls": 0,
-      "decisionMedianMs": 3383,
-      "decisionP90Ms": 4071,
-      "decisionMaxMs": 7376,
-      "generatedTokens": 2315,
+      "licence": "Proprietary",
       "loadSeconds": null,
-      "peakMemoryGigabytes": null,
+      "maker": "Google",
+      "minorOnly": 1,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "Gemini 4 Hydrogen (Low Effort)",
       "passScores": [
         77
-      ]
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 40.9,
+          "score": 91,
+          "weight": 45,
+          "why": "95% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 13.2,
+          "score": 88,
+          "weight": 15,
+          "why": "serious mistakes on 3% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 13.6,
+          "score": 54,
+          "weight": 25,
+          "why": "1.5 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 4.6,
+          "score": 46,
+          "weight": 10,
+          "why": "3.4 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 77,
+      "seriousMistakes": 1,
+      "sizeGigabytes": null,
+      "strengths": [
+        "95% of turns right"
+      ],
+      "toolCalls": 21,
+      "turnsPassed": 0.9545,
+      "weaknesses": []
+    },
+    {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "requests": {
+          "passed": 20,
+          "total": 20
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "low",
+        "model": "us.anthropic.claude-fable-5-2",
+        "provider": "Amazon Bedrock"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 7203,
+      "decisionMedianMs": 3400,
+      "decisionP90Ms": 4875,
+      "files": [],
+      "generatedTokens": 2737,
+      "id": "claude-fable-5.2",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "Anthropic",
+      "minorOnly": 0,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "Claude Fable 5.2 (Low Effort)",
+      "passScores": [
+        76
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 45,
+          "score": 100,
+          "weight": 45,
+          "why": "100% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 7.7,
+          "score": 31,
+          "weight": 25,
+          "why": "3.4 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 3.1,
+          "score": 31,
+          "weight": 10,
+          "why": "4.9 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 76,
+      "seriousMistakes": 0,
+      "sizeGigabytes": null,
+      "strengths": [
+        "100% of turns right"
+      ],
+      "toolCalls": 22,
+      "turnsPassed": 1,
+      "weaknesses": []
     },
     {
       "id": "minicpm5-2b",
@@ -1739,6 +2369,94 @@
         74,
         71
       ]
+    },
+    {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 3,
+          "total": 4
+        },
+        "requests": {
+          "passed": 19,
+          "total": 20
+        },
+        "video": {
+          "passed": 5,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "none",
+        "model": "openai.gpt-6-luna",
+        "provider": "Amazon Bedrock"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 1862,
+      "decisionMedianMs": 755,
+      "decisionP90Ms": 1396,
+      "files": [],
+      "generatedTokens": 1007,
+      "id": "gpt-6-luna",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "OpenAI",
+      "minorOnly": 1,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "GPT-6 Luna (No Effort)",
+      "passScores": [
+        73
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 32.7,
+          "score": 73,
+          "weight": 45,
+          "why": "86% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 7.7,
+          "score": 52,
+          "weight": 15,
+          "why": "serious mistakes on 12% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 18.4,
+          "score": 74,
+          "weight": 25,
+          "why": "0.8 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 8.6,
+          "score": 86,
+          "weight": 10,
+          "why": "1.4 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 73,
+      "seriousMistakes": 4,
+      "sizeGigabytes": null,
+      "strengths": [],
+      "toolCalls": 28,
+      "turnsPassed": 0.8636,
+      "weaknesses": []
     },
     {
       "id": "g9v3-3b",
@@ -3127,6 +3845,94 @@
       ]
     },
     {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 3,
+          "total": 4
+        },
+        "requests": {
+          "passed": 16,
+          "total": 20
+        },
+        "video": {
+          "passed": 7,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "low",
+        "model": "gemini-4-argon",
+        "provider": "Google Cloud"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 10000,
+      "decisionMedianMs": 4613,
+      "decisionP90Ms": 10000,
+      "files": [],
+      "generatedTokens": 737,
+      "id": "gemini-4-argon",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "Google",
+      "minorOnly": 0,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "Gemini 4 Argon (Low Effort)",
+      "passScores": [
+        43
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 28.6,
+          "score": 64,
+          "weight": 45,
+          "why": "82% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 4.1,
+          "score": 27,
+          "weight": 15,
+          "why": "serious mistakes on 18% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 5.5,
+          "score": 22,
+          "weight": 25,
+          "why": "4.6 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 0,
+          "score": 0,
+          "weight": 10,
+          "why": "10.0 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 43,
+      "seriousMistakes": 6,
+      "sizeGigabytes": null,
+      "strengths": [],
+      "toolCalls": 19,
+      "turnsPassed": 0.8182,
+      "weaknesses": []
+    },
+    {
       "id": "phi-4-mini",
       "score": 41,
       "coverage": 100,
@@ -3685,6 +4491,94 @@
       "passScores": [
         29
       ]
+    },
+    {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 2,
+          "total": 4
+        },
+        "requests": {
+          "passed": 14,
+          "total": 20
+        },
+        "video": {
+          "passed": 4,
+          "total": 8
+        }
+      },
+      "cloud": {
+        "effort": "low",
+        "model": "gemini-4-carbon",
+        "provider": "Google Cloud"
+      },
+      "coverage": 100,
+      "decisionMaxMs": 10000,
+      "decisionMedianMs": 6634,
+      "decisionP90Ms": 10000,
+      "files": [],
+      "generatedTokens": 612,
+      "id": "gemini-4-carbon",
+      "invalidToolCalls": 0,
+      "licence": "Proprietary",
+      "loadSeconds": null,
+      "maker": "Google",
+      "minorOnly": 0,
+      "missing": [],
+      "modelClass": "cloud",
+      "name": "Gemini 4 Carbon (Low Effort)",
+      "passScores": [
+        20
+      ],
+      "peakMemoryGigabytes": null,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 12.3,
+          "score": 27,
+          "weight": 45,
+          "why": "64% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 0,
+          "score": 0,
+          "weight": 15,
+          "why": "serious mistakes on 36% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 2.9,
+          "score": 12,
+          "weight": 25,
+          "why": "6.6 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 0,
+          "score": 0,
+          "weight": 10,
+          "why": "10.0 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 20,
+      "seriousMistakes": 12,
+      "sizeGigabytes": null,
+      "strengths": [],
+      "toolCalls": 17,
+      "turnsPassed": 0.6364,
+      "weaknesses": []
     },
     {
       "id": "raon-1-nano",
