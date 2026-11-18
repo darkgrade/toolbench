@@ -14,6 +14,8 @@ export interface WireCall {
     id: string
     type: 'function'
     function: { name: string; arguments: string }
+    /** Gemini's thought signature for the call: sent back with it, as Gemini requires for tools. */
+    extra_content?: unknown
 }
 export type ChatMessage =
     | { role: 'system' | 'user'; content: string }
@@ -48,6 +50,7 @@ function fromChatCompletion(answer: any): CloudReply {
         id: call.id || `call_${index}`,
         type: 'function',
         function: { name: call.function?.name ?? '', arguments: typeof call.function?.arguments === 'string' ? call.function.arguments : JSON.stringify(call.function?.arguments ?? {}) },
+        ...(call.extra_content ? { extra_content: call.extra_content } : {}),
     }))
     return { content: typeof message.content === 'string' ? message.content : '', calls, promptTokens: answer.usage?.prompt_tokens ?? null, generatedTokens: answer.usage?.completion_tokens ?? null }
 }
@@ -100,6 +103,30 @@ async function atLowest(settings: CloudSettings, call: (effort: string) => Promi
             effort = next
         }
     }
+}
+
+/**
+ * Before the script, untimed (as a local model reads the system prompt once on load): each level from the lowest any
+ * vendor has, a short request with the system prompt and tools, and the first level that answers within 30 s is the
+ * model's for the run. A level it refuses, or accepts and never answers (GPT-6.2 Sol at none), is passed over.
+ */
+export async function findLowest(settings: CloudSettings, system: string, tools: OpenAITool[]): Promise<string> {
+    const probe: ChatMessage[] = [{ role: 'system', content: system }, { role: 'user', content: 'Ready?' }]
+    let lastError = ''
+    for (let index = LADDER.indexOf(settings.effort); index >= 0 && index < LADDER.length; index++) {
+        const effort = LADDER[index]
+        try {
+            await callAt({ ...settings, effort }, probe, tools, AbortSignal.timeout(30_000))
+            lowest.set(settings.model, effort)
+            return effort
+        } catch (error) {
+            lastError = error instanceof Error ? error.message : String(error)
+            const refusedEffort = /HTTP 400/.test(lastError) && /effort|thinking|reasoning/i.test(lastError)
+            const tooSlow = /abort|timed? ?out/i.test(lastError)
+            if (!refusedEffort && !tooSlow) throw error
+        }
+    }
+    throw new Error(`no effort level answered: ${lastError.slice(0, 300)}`)
 }
 
 /** The conversation as OpenAI's Responses API takes it (Bedrock takes tools with a reasoning effort only there). */

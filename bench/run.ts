@@ -13,7 +13,7 @@ import { withGpu } from '@bench/gpu-lock'
 import { ANSWER_KEY, type Mistake, type ToolCall, type TurnOutcome, turnCredit } from '@bench/answer-key'
 import { type RunningServer, startServer } from '@bench/engines'
 import { ALL_MODELS, withEffort, DROPPED_MODELS, LLAMA_CPP_RELEASE, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
-import { cloudStep, effortUsed } from '@bench/cloud'
+import { cloudStep, effortUsed, findLowest } from '@bench/cloud'
 import { SCRIPT_PATH, scriptTurns } from '@bench/script'
 import { cameraService } from '@main/camera-service'
 import type { CameraSnapshot } from '@bench/simulated-camera'
@@ -293,6 +293,7 @@ async function measure(model: TextModel, pass: number, passes: number, server: R
     studioView.report({ ...STARTING_VIEW })
     const conversation: ChatMessage[] = [{ role: 'system', content: AGENT_INSTRUCTIONS }]
     if (server) await warmUp(url)
+    else if (model.cloud) await findLowest(model.cloud, AGENT_INSTRUCTIONS, OPENAI_TOOLS)
     const perfect = JSON.parse(readFileSync(PERFECT_PATH, 'utf8')) as Record<string, { camera: CameraSnapshot; view: StudioViewState }>
     try {
         for (const { turn, text } of turns) {
