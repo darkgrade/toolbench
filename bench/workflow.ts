@@ -23,6 +23,22 @@ const MODEL_DIRECTORY = join(ROOT, 'results', 'models')
 /** Where the camera is before each turn, as published for the site's replay. */
 const PERFECT_START_PATH = join(ROOT, 'results', 'perfect.json')
 const PASSES_DIRECTORY = join(ROOT, 'results', 'raw', 'passes')
+/**
+ * Each model's row and turns as its task finished, where nothing replaces them: Outpost copies this repository over
+ * the worker's files (results/raw aside) whenever it restarts the worker, so results/ can go back to the last
+ * published version mid-run. Publish builds from these, never from results/ alone.
+ */
+const KEPT_DIRECTORY = join(ROOT, 'results', 'raw', 'kept')
+function keep(id: string, row: Row): void {
+    mkdirSync(KEPT_DIRECTORY, { recursive: true })
+    writeFileSync(join(KEPT_DIRECTORY, `${id}.row.json`), JSON.stringify(row))
+    const detail = join(MODEL_DIRECTORY, `${id}.json`)
+    if (existsSync(detail)) writeFileSync(join(KEPT_DIRECTORY, `${id}.turns.json`), readFileSync(detail, 'utf8'))
+}
+const kept = (id: string, what: 'row' | 'turns'): string | null => {
+    const path = join(KEPT_DIRECTORY, `${id}.${what}.json`)
+    return existsSync(path) ? readFileSync(path, 'utf8') : null
+}
 
 // cloud: the 12 cloud models too (off unless asked; or name them in models).
 type RunInput = { models?: string[]; force?: boolean; cloud?: boolean }
@@ -169,19 +185,33 @@ export async function toolbench() {
             if (results.at(-1)!.kept) await runHarness(['--models', model.id, '--pass', String(passes), '--passes', String(passes), '--median'], context)
             const row = rowOf(model.id)
             if (!row) throw new Error(`No results row for ${model.id}`)
+            if (!row.error && !row.lastError) keep(model.id, row)
             if (String(row.error).startsWith("Couldn't run:")) return { row, summary: `Skipped: ${row.error}` }
             if (row.error || row.lastError) throw new Error(String(row.error || row.lastError))
             return { row, summary: `Score ${row.score ?? '–'}${passes > 1 ? ` (passes ${(row.passScores as (number | null)[]).map(score => score ?? '–').join(' · ')})` : ''}` }
         },
     })
 
-    const publishTask = task<{ models: string[] }, { commit: string | null; summary: string }>({
+    const publishTask = task<{ models: string[]; rows?: Row[] }, { commit: string | null; summary: string }>({
         name: 'publish',
         fn: async (input, context) => {
+            // The published results with this run's rows set in: each model's row as its task returned it (or as kept),
+            // never an error over a published score.
+            const results = JSON.parse(readFileSync(RESULTS_PATH, 'utf8')) as { models: Row[] }
+            const byId = new Map(results.models.map(row => [String(row.id), row]))
+            for (const id of input.models) {
+                const given = input.rows?.find(row => row.id === id)
+                const row = given && !given.error ? given : kept(id, 'row') ? (JSON.parse(kept(id, 'row')!) as Row) : given
+                if (!row || (row.error && typeof byId.get(id)?.score === 'number')) continue
+                byId.set(id, row)
+            }
+            results.models = [...byId.values()].sort((first, second) => Number(second.score ?? -1) - Number(first.score ?? -1))
+            writeFileSync(RESULTS_PATH, `${JSON.stringify(results, null, 2)}\n`)
             const files: Record<string, string> = { [relative(ROOT, RESULTS_PATH)]: readFileSync(RESULTS_PATH, 'utf8') }
             for (const id of input.models) {
                 const detail = join(MODEL_DIRECTORY, `${id}.json`)
-                if (existsSync(detail)) files[relative(ROOT, detail)] = readFileSync(detail, 'utf8')
+                const turns = existsSync(detail) ? readFileSync(detail, 'utf8') : kept(id, 'turns')
+                if (turns) files[relative(ROOT, detail)] = turns
             }
             if (existsSync(PERFECT_START_PATH)) files[relative(ROOT, PERFECT_START_PATH)] = readFileSync(PERFECT_START_PATH, 'utf8')
             if (!context.inOutpost) return { commit: null, summary: 'Written here (not in Outpost, so not published)' }
@@ -217,7 +247,7 @@ export async function toolbench() {
                     rows.push({ id, error: error instanceof Error ? error.message : String(error) })
                 }
             }
-            const published = await publishTask.run({ models }, { label: 'Publish', key: 'publish' })
+            const published = await publishTask.run({ models, rows }, { label: 'Publish', key: 'publish' })
             const scored = rows.filter(row => !row.error).length
             const failed = rows.filter(row => row.error && !String(row.error).startsWith("Couldn't run:")) // llama.cpp can't load it yet: skipped, not failed
             if (failed.length) throw new Error(`${failed.length} of ${rows.length} models failed (${published.summary}): ${failed.map(row => `${row.id}: ${row.error}`).join('; ').slice(0, 2000)}`)
