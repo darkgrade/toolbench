@@ -1,7 +1,7 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-20T23:35:45.345Z",
+  "date": "2026-11-20T23:43:33.052Z",
   "hardware": {
     "machine": "Mac17,14",
     "chip": "Apple M5 Max",
@@ -2463,6 +2463,98 @@
       "weaknesses": []
     },
     {
+      "byKind": {
+        "cannotDo": {
+          "passed": 1,
+          "total": 1
+        },
+        "questions": {
+          "passed": 4,
+          "total": 4
+        },
+        "requests": {
+          "passed": 20,
+          "total": 20
+        },
+        "video": {
+          "passed": 8,
+          "total": 8
+        }
+      },
+      "coverage": 100,
+      "decisionMaxMs": 8238,
+      "decisionMedianMs": 4350,
+      "decisionP90Ms": 5800,
+      "files": [
+        {
+          "bytes": 16610543328,
+          "name": "Inkling-2-Mini-UD-Q4_K_M.gguf",
+          "sha256": "f90c5a4df44d335ac9f9eea2a15c31d6c5a377b1b3cd9ff7fc2cf123f3cdf7e1"
+        }
+      ],
+      "generatedTokens": 2442,
+      "id": "inkling-2-mini",
+      "invalidToolCalls": 0,
+      "licence": "Apache-2.0",
+      "loadSeconds": 1.5,
+      "maker": "Thinking Machines Lab",
+      "minorOnly": 0,
+      "missing": [],
+      "modelClass": "mixture of experts",
+      "name": "Inkling 2 Mini 26B-A3B (UD-Q4_K_M)",
+      "passScores": [
+        73
+      ],
+      "peakMemoryGigabytes": 25.51,
+      "reasons": [
+        {
+          "area": "Right outcome",
+          "points": 45,
+          "score": 100,
+          "weight": 45,
+          "why": "100% of turns right"
+        },
+        {
+          "area": "Serious mistakes",
+          "points": 15,
+          "score": 100,
+          "weight": 15,
+          "why": "serious mistakes on 0% of turns"
+        },
+        {
+          "area": "Clean tool calls",
+          "points": 5,
+          "score": 100,
+          "weight": 5,
+          "why": "0% of calls invalid"
+        },
+        {
+          "area": "Typical wait",
+          "points": 5.9,
+          "score": 24,
+          "weight": 25,
+          "why": "4.3 s typical wait"
+        },
+        {
+          "area": "Slow wait",
+          "points": 2.4,
+          "score": 24,
+          "weight": 10,
+          "why": "5.8 s for the slowest 1 in 10"
+        }
+      ],
+      "score": 73,
+      "seriousMistakes": 0,
+      "sizeGigabytes": 16.61,
+      "source": "https://huggingface.co/unsloth/Inkling-2-Mini-GGUF",
+      "strengths": [
+        "100% of turns right"
+      ],
+      "toolCalls": 24,
+      "turnsPassed": 1,
+      "weaknesses": []
+    },
+    {
       "id": "g9v3-3b",
       "score": 70,
       "coverage": 100,
@@ -4595,12 +4687,6 @@
       "name": "Nemotron Labs Dory 1.0 4B (Q5_K_M)",
       "maker": "NVIDIA",
       "error": "Couldn't run: llama.cpp b12283 doesn't support this model's architecture (\"dory\") yet."
-    },
-    {
-      "id": "inkling-2-mini",
-      "name": "Inkling 2 Mini 26B-A3B (UD-Q4_K_M)",
-      "error": "Couldn't run: llama.cpp b12283 doesn't support this model's architecture (\"inkling2\") yet.",
-      "maker": "Thinking Machines Lab"
     }
   ]
 }
