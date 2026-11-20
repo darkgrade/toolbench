@@ -40,12 +40,13 @@ export interface CloudSettings {
 
 const text = (id: string, name: string, repository: string, file: string): TextModel => ({ id, modelClass: MIXTURE_OF_EXPERTS.has(id) ? 'mixture of experts' : 'small', name, maker: MAKERS[id.split('-')[0]] ?? repository.split('/')[0], licence: LICENCES[id] ?? 'Apache-2.0', repository, file })
 
-const MIXTURE_OF_EXPERTS = new Set(['ornith-1.5-35b-a3b', 'qwen3.5-35b-a3b', 'qwen3.6-35b-a3b', 'gpt-oss-20b', 'glm-4.7-flash', 'gemma-4-26b-a4b', 'nemotron-3.5-lightning', 'lfm2.5-8b-a1b', 'lfm2-24b-a2b'])
+const MIXTURE_OF_EXPERTS = new Set(['ornith-1.5-35b-a3b', 'qwen3.5-35b-a3b', 'qwen3.6-35b-a3b', 'gpt-oss-20b', 'glm-4.7-flash', 'gemma-4-26b-a4b', 'nemotron-3.5-lightning', 'lfm2.5-8b-a1b', 'lfm2-24b-a2b', 'inkling-2-mini'])
 
 const MAKERS: Record<string, string> = {
     'qwen3.5': 'Qwen', 'qwen3.6': 'Qwen', 'qwen3.8': 'Qwen', qwen3: 'Qwen', 'ornith': 'Ornith', saluki: 'Conway Research', underdog: 'Conway Research', bonsai: 'Prism ML', ternary: 'Prism ML',
     gpt: 'OpenAI', glm: 'Z.ai', gemma: 'Google', nemotron: 'NVIDIA', granite: 'IBM', 'lfm2.5': 'Liquid AI', lfm2: 'Liquid AI', ministral: 'Mistral', mistral: 'Mistral', xlam: 'Salesforce',
     minicpm5: 'OpenBMB', k2: 'MBZUAI IFM', lfm3: 'Liquid AI', g9v3: 'ai9stars', jan: 'Jan', smollm3: 'Hugging Face', phi: 'Microsoft', functiongemma: 'Google', spark: 'XHToken', raon: 'KRAFTON',
+    inkling: 'Thinking Machines Lab',
 }
 const LICENCES: Record<string, string> = {
     'ornith-1.5-9b': 'Unstated', 'glm-4.7-flash': 'MIT', 'nemotron-3.5-lightning': 'OpenMDW', 'lfm2.5-8b-a1b': 'LFM Open', 'lfm2-24b-a2b': 'LFM Open', 'xlam-2-8b': 'CC-BY-NC-4.0', 'underdog-poodle-4b': 'CC-BY-NC-4.0',
@@ -64,6 +65,7 @@ export const DROPPED_MODELS: { name: string; why: string }[] = [
     { name: 'Gemma 4 12B (Google)', why: 'Dropped: a dense model this size is too slow for instant tool calls on a laptop. It ran out of the 10 s limit on many turns, so its result measured speed more than ability.' },
     { name: 'Ministral 3 14B (Mistral)', why: 'Dropped: a dense model this size is too slow for instant tool calls on a laptop. It ran out of the 10 s limit on many turns, so its result measured speed more than ability.' },
     { name: 'Mistral Small 3.2 24B (Mistral)', why: 'Dropped: a dense model this size is too slow for instant tool calls on a laptop. It ran out of the 10 s limit on many turns, so its result measured speed more than ability.' },
+    { name: 'DaisyRose 27B (RadixArk)', why: 'Dropped: a dense model this size is too slow for instant tool calls on a laptop. Measured here at Q4_K_M on 2026-11-20: 21.7 to 23.1 tokens a second, against about 68 for Ornith 1.5 9B on the same Mac.' },
 ]
 
 export const TEXT_MODELS: TextModel[] = [
@@ -106,6 +108,10 @@ export const TEXT_MODELS: TextModel[] = [
     text('spark-x2.6-1.7b', 'Spark-X2.6 1.7B (Q4_K_M)', 'XHToken/Spark-X2.6-1.7B-GGUF', 'Spark-X2.6-1.7B-Q4_K_M.gguf'),
     text('raon-1-nano', 'Raon-1 nano 3B (Q4_K_M)', 'KRAFTON/Raon-1-nano-gguf', 'raon-1-nano-Q4_K_M.gguf'),
     text('nemotron-labs-dory-4b', 'Nemotron Labs Dory 1.0 4B (Q5_K_M)', 'nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-GGUF', 'NVIDIA-Nemotron-Labs-Dory1.0-4B-Q5_K_M.gguf'),
+    // Added 2026-11-20 (Kevin). Inkling 2 Mini is a looped mixture-of-experts model (26.4B, 3.4B active). No llama.cpp
+    // release loads it yet: the pinned one does not know "inkling2", and b12599 knows it but not the looped layers
+    // (ggml-org/llama.cpp#32695, open). It records as "couldn't run" until that lands and the release is raised.
+    text('inkling-2-mini', 'Inkling 2 Mini 26B-A3B (UD-Q4_K_M)', 'unsloth/Inkling-2-Mini-GGUF', 'Inkling-2-Mini-UD-Q4_K_M.gguf'),
 ]
 
 /**
