@@ -111,11 +111,11 @@ export async function startEngine(launch: EngineLaunch): Promise<RunningServer> 
 }
 
 /** Launches llama-server with only what it must be told: the model, its projector and a port. */
-export async function startServer(modelPath: string, projectorPath: string | undefined, logPath: string, extraArguments: string[] = []): Promise<RunningServer> {
+export async function startServer(modelPath: string, projectorPath: string | undefined, logPath: string, extraArguments: string[] = [], binary = LLAMA_SERVER_BINARY): Promise<RunningServer> {
     const port = await freePort()
     const projector = projectorPath ? ['--mmproj', projectorPath] : []
     return startEngine({
-        command: LLAMA_SERVER_BINARY,
+        command: binary,
         arguments: ['--model', modelPath, ...projector, '--host', '127.0.0.1', '--port', String(port), '--no-webui', ...extraArguments],
         port,
         logPath,

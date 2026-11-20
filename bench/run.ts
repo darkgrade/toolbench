@@ -12,7 +12,7 @@
 import { withGpu } from '@bench/gpu-lock'
 import { ANSWER_KEY, type Mistake, type ToolCall, type TurnOutcome, turnCredit } from '@bench/answer-key'
 import { type RunningServer, startServer } from '@bench/engines'
-import { ALL_MODELS, withEffort, DROPPED_MODELS, LLAMA_CPP_RELEASE, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
+import { ALL_MODELS, withEffort, DROPPED_MODELS, engineFor, LLAMA_MODELS, LLAMA_SERVER_BINARY, TEXT_MODELS, type TextModel } from '@bench/models'
 import { cloudStep, effortUsed, findLowest } from '@bench/cloud'
 import { SCRIPT_PATH, scriptTurns } from '@bench/script'
 import { cameraService } from '@main/camera-service'
@@ -279,7 +279,7 @@ async function benchmarkModel(model: TextModel, pass: number, passes: number): P
     }
     const modelPath = join(LLAMA_MODELS, model.repository.replace('/', '__'), model.file)
     startModel(model.id, scriptTurns().length, passes > 1 ? `Pass ${pass} of ${passes}: loading the model` : undefined)
-    const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`), SERVER_SETTINGS)
+    const server: RunningServer = await startServer(modelPath, undefined, join(RAW_DIRECTORY, `${model.id}.server.log`), SERVER_SETTINGS, engineFor(model.id).binary)
     return measure(model, pass, passes, server, server.url, modelPath)
 }
 
@@ -372,7 +372,7 @@ async function measure(model: TextModel, pass: number, passes: number, server: R
 function publishableError(message: string, model: TextModel): string {
     const log = existsSync(join(RAW_DIRECTORY, `${model.id}.server.log`)) ? readFileSync(join(RAW_DIRECTORY, `${model.id}.server.log`), 'utf8') : ''
     const architecture = log.match(/unknown model architecture: '([^']+)'/)?.[1]
-    if (architecture) return `Couldn't run: llama.cpp ${LLAMA_CPP_RELEASE} doesn't support this model's architecture ("${architecture}") yet.`
+    if (architecture) return `Couldn't run: llama.cpp ${engineFor(model.id).release} doesn't support this model's architecture ("${architecture}") yet.`
     return message.replaceAll(ROOT, '.').replaceAll(homedir(), '~')
 }
 

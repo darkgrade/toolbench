@@ -11,6 +11,18 @@ import { join } from 'node:path'
 export const CACHE_DIRECTORY = process.env.BENCH_CACHE ?? join(homedir(), '.cache', 'darkgrade-bench', 'toolbench')
 export const LLAMA_CPP_RELEASE = 'b12283'
 export const LLAMA_SERVER_BINARY = join(CACHE_DIRECTORY, 'llama.cpp', 'llama-server')
+/**
+ * Approved exception: a model no llama.cpp release can load yet runs on the build its GGUF's publisher ships.
+ * Inkling 2 Mini needs looped layers and per-expert NVFP4 scales, which are only in Unsloth's fork
+ * (https://github.com/unslothai/llama.cpp/releases/tag/b12588-mix-c0c3de8, as https://unsloth.ai/docs/models/inkling-2-mini
+ * says; upstream: ggml-org/llama.cpp#32695). It lives beside the pinned release, in `llama.cpp-unsloth`. Drop the
+ * exception when the pinned release loads the model.
+ */
+export const OTHER_ENGINES: Record<string, { release: string; binary: string }> = {
+    'inkling-2-mini': { release: 'b12588-mix-c0c3de8 (Unsloth fork)', binary: join(CACHE_DIRECTORY, 'llama.cpp-unsloth', 'llama-server') },
+}
+/** The server a model runs on, and what that build is called. */
+export const engineFor = (id: string): { release: string; binary: string } => OTHER_ENGINES[id] ?? { release: LLAMA_CPP_RELEASE, binary: LLAMA_SERVER_BINARY }
 /** Every downloaded model lives on the models drive, by kind (MODELS, default /Volumes/models): text models in text/gguf. */
 export const MODELS_DIRECTORY = process.env.MODELS ?? '/Volumes/models'
 export const LLAMA_MODELS = join(MODELS_DIRECTORY, 'text', 'gguf')
@@ -108,9 +120,8 @@ export const TEXT_MODELS: TextModel[] = [
     text('spark-x2.6-1.7b', 'Spark-X2.6 1.7B (Q4_K_M)', 'XHToken/Spark-X2.6-1.7B-GGUF', 'Spark-X2.6-1.7B-Q4_K_M.gguf'),
     text('raon-1-nano', 'Raon-1 nano 3B (Q4_K_M)', 'KRAFTON/Raon-1-nano-gguf', 'raon-1-nano-Q4_K_M.gguf'),
     text('nemotron-labs-dory-4b', 'Nemotron Labs Dory 1.0 4B (Q5_K_M)', 'nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-GGUF', 'NVIDIA-Nemotron-Labs-Dory1.0-4B-Q5_K_M.gguf'),
-    // Added 2026-11-20 (Kevin). Inkling 2 Mini is a looped mixture-of-experts model (26.4B, 3.4B active). No llama.cpp
-    // release loads it yet: the pinned one does not know "inkling2", and b12599 knows it but not the looped layers
-    // (ggml-org/llama.cpp#32695, open). It records as "couldn't run" until that lands and the release is raised.
+    // Added 2026-11-20 (Kevin). Inkling 2 Mini is a looped mixture-of-experts model (26.4B, 3.4B active); it runs on
+    // Unsloth's llama.cpp build (OTHER_ENGINES above) until a llama.cpp release loads it.
     text('inkling-2-mini', 'Inkling 2 Mini 26B-A3B (UD-Q4_K_M)', 'unsloth/Inkling-2-Mini-GGUF', 'Inkling-2-Mini-UD-Q4_K_M.gguf'),
 ]
 
