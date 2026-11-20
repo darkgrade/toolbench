@@ -45,7 +45,7 @@ const MIXTURE_OF_EXPERTS = new Set(['ornith-1.5-35b-a3b', 'qwen3.5-35b-a3b', 'qw
 const MAKERS: Record<string, string> = {
     'qwen3.5': 'Qwen', 'qwen3.6': 'Qwen', 'qwen3.8': 'Qwen', qwen3: 'Qwen', 'ornith': 'Ornith', saluki: 'Conway Research', underdog: 'Conway Research', bonsai: 'Prism ML', ternary: 'Prism ML',
     gpt: 'OpenAI', glm: 'Z.ai', gemma: 'Google', nemotron: 'NVIDIA', granite: 'IBM', 'lfm2.5': 'Liquid AI', lfm2: 'Liquid AI', ministral: 'Mistral', mistral: 'Mistral', xlam: 'Salesforce',
-    minicpm5: 'OpenBMB', k2: 'MBZUAI IFM', lfm3: 'Liquid AI', g9v3: 'ai9stars', jan: 'Jan', smollm3: 'Hugging Face', phi: 'Microsoft', functiongemma: 'Google', spark: 'XHToken', raon: 'KRAFTON',
+    minicpm5: 'OpenBMB', k2: 'MBZUAI IFM', lfm3: 'Liquid AI', g9v3: 'ai9stars', jan: 'Jan', smollm3: 'Hugging Face', phi: 'Microsoft', functiongemma: 'Google', spark: 'XHToken', raon: 'KRAFTON', daisyrose: 'RadixArk',
 }
 const LICENCES: Record<string, string> = {
     'ornith-1.5-9b': 'Unstated', 'glm-4.7-flash': 'MIT', 'nemotron-3.5-lightning': 'OpenMDW', 'lfm2.5-8b-a1b': 'LFM Open', 'lfm2-24b-a2b': 'LFM Open', 'xlam-2-8b': 'CC-BY-NC-4.0', 'underdog-poodle-4b': 'CC-BY-NC-4.0',
@@ -106,6 +106,9 @@ export const TEXT_MODELS: TextModel[] = [
     text('spark-x2.6-1.7b', 'Spark-X2.6 1.7B (Q4_K_M)', 'XHToken/Spark-X2.6-1.7B-GGUF', 'Spark-X2.6-1.7B-Q4_K_M.gguf'),
     text('raon-1-nano', 'Raon-1 nano 3B (Q4_K_M)', 'KRAFTON/Raon-1-nano-gguf', 'raon-1-nano-Q4_K_M.gguf'),
     text('nemotron-labs-dory-4b', 'Nemotron Labs Dory 1.0 4B (Q5_K_M)', 'nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-GGUF', 'NVIDIA-Nemotron-Labs-Dory1.0-4B-Q5_K_M.gguf'),
+    // Opt-in exception to the dense-27B drop (DROPPED_MODELS): RadixArk's fine-tune of Qwen3.8 27B, run at Kevin's
+    // request (2026-11-20) to see whether it beats the 10 s limit its base ran past. Dense, so 'small' class and three passes.
+    text('daisyrose-27b', 'DaisyRose 27B (Q4_K_M)', 'RadixArk/DaisyRose-27B-GGUF', 'DaisyRose-27B-Q4_K_M.gguf'),
 ]
 
 /**
