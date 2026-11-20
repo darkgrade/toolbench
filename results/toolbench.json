@@ -1,7 +1,7 @@
 {
   "benchmark": "toolbench",
   "version": 1,
-  "date": "2026-11-18T03:00:37.065Z",
+  "date": "2026-11-20T23:35:45.345Z",
   "hardware": {
     "machine": "Mac17,14",
     "chip": "Apple M5 Max",
@@ -19,7 +19,7 @@
     "turns": 33,
     "tools": {
       "source": "darkgrade/darkgrade apps/studio/src/main/tools/studio-tools.ts",
-      "commit": "795d35a545bcfe2c9e9f0c4c03d18805e30bf1d6",
+      "commit": "445ca938a78410059f5314d319babf2df69bbd9b",
       "count": 18
     }
   },
@@ -63,6 +63,10 @@
     {
       "name": "Mistral Small 3.2 24B (Mistral)",
       "why": "Dropped: a dense model this size is too slow for instant tool calls on a laptop. It ran out of the 10 s limit on many turns, so its result measured speed more than ability."
+    },
+    {
+      "name": "DaisyRose 27B (RadixArk)",
+      "why": "Dropped: a dense model this size is too slow for instant tool calls on a laptop. Measured here at Q4_K_M on 2026-11-20: 21.7 to 23.1 tokens a second, against about 68 for Ornith 1.5 9B on the same Mac."
     }
   ],
   "method": {
@@ -4591,6 +4595,12 @@
       "name": "Nemotron Labs Dory 1.0 4B (Q5_K_M)",
       "maker": "NVIDIA",
       "error": "Couldn't run: llama.cpp b12283 doesn't support this model's architecture (\"dory\") yet."
+    },
+    {
+      "id": "inkling-2-mini",
+      "name": "Inkling 2 Mini 26B-A3B (UD-Q4_K_M)",
+      "error": "Couldn't run: llama.cpp b12283 doesn't support this model's architecture (\"inkling2\") yet.",
+      "maker": "Thinking Machines Lab"
     }
   ]
 }
