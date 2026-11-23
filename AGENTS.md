@@ -14,7 +14,7 @@ writes a TypeScript config that points their two outside imports, Studio's camer
 service and Electron, at `bench/simulated-camera.ts` and `bench/electron-stand-in.ts`, and everything
 else at the darkgrade checkout (`DARKGRADE_PATH`, by default `../darkgrade`). The results record that
 checkout's commit. Nothing in darkgrade is changed. When Studio's tools move or gain an import from
-Studio's internals, update `studio-config.ts`. Once the tools are a shared library (with Link doing the camera
+Studio's internals, update `studio-config.ts`. Once the tools are a shared library (with Slate doing the camera
 abstraction), import them from there instead.
 
 Each turn starts where a perfect run would be (`bench/run.ts --perfect` plays the answer key's
