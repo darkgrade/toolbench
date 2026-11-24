@@ -101,6 +101,9 @@ models side by side), **Table** (the `Leaderboard` with filters as one-of-a-few 
   (`src/details.ts`), separately from the overview's code. These are the pages search engines have indexed:
   never change their address, title, description or canonical URL, and keep their substance in the HTML.
 - Every page is prerendered with its own title, description, canonical URL and OG card.
+- The results are a schema.org `Dataset` (`structuredData` in `scripts/prerender.ts`, the same in all three benches):
+  MIT licensed like the code (`LICENSE`), described by `BENCH.dataset`, with `results/<bench>.json` copied to
+  `data/<bench>.json` beside the pages as its download. Keep it complete for Google's Dataset rich results.
 
 **Results file**
 

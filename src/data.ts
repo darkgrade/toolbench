@@ -14,6 +14,12 @@ export const BENCH = {
     origin: 'https://darkgrade.com',
     /** What it is, in search terms: names like Toolbench are shared with academic benchmarks. */
     subject: 'Local LLM tool-calling benchmark',
+    /** The results as a schema.org Dataset (scripts/prerender.ts): a fuller description than the tagline, for search. */
+    dataset: {
+        description:
+            "Toolbench by Darkgrade measures how well local AI models call tools, and how fast. Each model hears the same script, word for word: a creator filming a video and asking their camera app for help between and during takes. It acts through the app's real tools on a simulated camera, and every turn is checked against the script's answer key by outcome. Every local model runs on the same Mac with llama.cpp and its default settings, one at a time. Each gets a 0 to 100 score from the right outcome, serious mistakes, clean tool calls and how long it takes to decide, alongside its download size, memory and licence.",
+        keywords: ['LLM benchmark', 'tool calling', 'function calling', 'local LLM', 'llama.cpp', 'GGUF', 'voice control', 'camera control'],
+    },
 }
 
 /** The overview's views; each after the first is its own page at BENCH.path + id. */
